@@ -1,0 +1,3 @@
+export function ChatWindow() {
+  return <div className="rounded-lg border border-border bg-card p-4">Chat Window</div>;
+}

@@ -1,0 +1,391 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: #0a0a0a;
+  color: #f5f5f5;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #f5f5f5;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.bg-grid-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* ─── Selection ────────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: white;
+}
+
+/* ─── Custom Scrollbar ─────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111111;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.4);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.7);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.4) #111111;
+}
+
+/* ─── Animated Gradient Text ────────────────────────────────────────────────────── */
+.animate-gradient-text {
+  background-size: 200% auto;
+  animation: gradient-shift 4s ease-in-out infinite;
+}
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+
+/* Spec-exact gradient text animated class (270deg, 300% size, 4s) */
+.gradient-text-animated {
+  background: linear-gradient(
+    270deg,
+    #3B82F6, #8B5CF6, #06B6D4, #6366F1, #3B82F6
+  );
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── Shimmer / Shine on Hover ─────────────────────────────────────────────── */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transition: none;
+}
+.btn-shimmer:hover::after {
+  animation: shimmer-sweep 0.6s ease forwards;
+}
+@keyframes shimmer-sweep {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* ─── Button Press Effect ──────────────────────────────────────────────────── */
+.btn-press:active {
+  transform: scale(0.97);
+  transition: transform 0.08s ease;
+}
+
+/* ─── Floating Code Symbols ────────────────────────────────────────────────── */
+.floating-symbol {
+  position: absolute;
+  pointer-events: none;
+  animation: float-up linear infinite;
+  opacity: 0;
+}
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(0deg);
+  }
+  10% {
+    opacity: 0.1;
+  }
+  90% {
+    opacity: 0.06;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100vh) rotate(20deg);
+  }
+}
+
+/* ─── Hero Beam Effect ─────────────────────────────────────────────────────── */
+.hero-beam {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 40%;
+  background: linear-gradient(
+    180deg,
+    rgba(59, 130, 246, 0.6),
+    rgba(59, 130, 246, 0.1),
+    transparent
+  );
+  pointer-events: none;
+  filter: blur(8px);
+}
+.hero-beam::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 100%;
+  background: radial-gradient(
+    ellipse at top center,
+    rgba(59, 130, 246, 0.08),
+    transparent 70%
+  );
+}
+
+/* ─── Sidebar Active Pulse Dot ─────────────────────────────────────────────── */
+.nav-active-dot {
+  position: relative;
+}
+.nav-active-dot::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3B82F6;
+  box-shadow: 0 0 8px #3B82F6, 0 0 16px rgba(59, 130, 246, 0.3);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); }
+  50% { opacity: 0.6; transform: translateY(-50%) scale(1.3); }
+}
+
+/* ─── Sidebar Nav Hover Sweep ──────────────────────────────────────────────── */
+.nav-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.nav-sweep::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.08), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.4s ease;
+}
+.nav-sweep:hover::before {
+  transform: translateX(0);
+}
+
+/* ─── Stat Card Glow on Hover ──────────────────────────────────────────────── */
+.stat-glow-blue { transition: box-shadow 0.3s ease; }
+.stat-glow-blue:hover { box-shadow: 0 0 30px rgba(59, 130, 246, 0.15), 0 0 60px rgba(59, 130, 246, 0.05); }
+
+.stat-glow-green { transition: box-shadow 0.3s ease; }
+.stat-glow-green:hover { box-shadow: 0 0 30px rgba(34, 197, 94, 0.15), 0 0 60px rgba(34, 197, 94, 0.05); }
+
+.stat-glow-red { transition: box-shadow 0.3s ease; }
+.stat-glow-red:hover { box-shadow: 0 0 30px rgba(239, 68, 68, 0.15), 0 0 60px rgba(239, 68, 68, 0.05); }
+
+.stat-glow-purple { transition: box-shadow 0.3s ease; }
+.stat-glow-purple:hover { box-shadow: 0 0 30px rgba(168, 85, 247, 0.15), 0 0 60px rgba(168, 85, 247, 0.05); }
+
+/* ─── Animated Gradient Border ─────────────────────────────────────────────── */
+.gradient-border-animated {
+  position: relative;
+}
+.gradient-border-animated::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--gradient-angle, 0deg),
+    transparent 40%,
+    rgba(59, 130, 246, 0.3) 50%,
+    transparent 60%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: rotate-gradient 6s linear infinite;
+  pointer-events: none;
+}
+@keyframes rotate-gradient {
+  0% { --gradient-angle: 0deg; }
+  100% { --gradient-angle: 360deg; }
+}
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ─── Scanning Line Animation ────────────────────────────────────────────────────── */
+.scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #3B82F6, transparent);
+  box-shadow: 0 0 20px #3B82F6, 0 0 40px rgba(59, 130, 246, 0.25);
+  animation: scan 2s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 10;
+}
+@keyframes scan {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+/* ─── Corner Bracket Pulse (ReviewLoader) ───────────────────────────────────── */
+@keyframes pulse-corner {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; box-shadow: 0 0 8px rgba(59, 130, 246, 0.5); }
+}
+
+/* ─── Chat Input Focus Glow ────────────────────────────────────────────────── */
+.chat-input-glow:focus-within {
+  box-shadow: 0 0 0 2px #3B82F6, 0 0 20px rgba(59, 130, 246, 0.12);
+}
+
+/* ─── Cursor Typing Effect ─────────────────────────────────────────────────── */
+.typing-cursor::after {
+  content: '▎';
+  animation: blink-cursor 0.8s step-end infinite;
+  color: #3B82F6;
+}
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ─── Copy Success Flash ──────────────────────────────────────────────────── */
+@keyframes copy-flash {
+  0% { background-color: rgba(34, 197, 94, 0.2); }
+  100% { background-color: transparent; }
+}
+.copy-flash {
+  animation: copy-flash 0.4s ease-out;
+}
+
+/* ─── Loading Screen ──────────────────────────────────────────────────────── */
+.loading-logo {
+  animation: loading-pulse 1.5s ease-in-out infinite, loading-rotate 3s ease-in-out infinite;
+}
+@keyframes loading-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.85; }
+}
+@keyframes loading-rotate {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(3deg) scale(1.03); }
+  75% { transform: rotate(-3deg) scale(1.03); }
+}
+
+.loading-title {
+  animation: loading-fade-in 0.8s ease-out forwards;
+  opacity: 0;
+}
+.loading-title:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.loading-title:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes loading-fade-in {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.loading-progress {
+  animation: loading-progress-fill 1.4s ease-out forwards;
+}
+@keyframes loading-progress-fill {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* ─── Pulsing Border (used during code scanning) ──────────────────────────── */
+.border-pulse-blue {
+  animation: border-pulse 1.5s ease-in-out infinite;
+}
+@keyframes border-pulse {
+  0%, 100% { border-color: rgba(59, 130, 246, 0.2); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+  50% { border-color: rgba(59, 130, 246, 0.6); box-shadow: 0 0 20px 2px rgba(59, 130, 246, 0.15); }
+}
+
+/* ─── Page Transition ─────────────────────────────────────────────────────── */
+.page-enter {
+  animation: page-fade-in 0.3s ease-out;
+}
+@keyframes page-fade-in {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Typewriter Effect ───────────────────────────────────────────────────── */
+.typewriter-cursor {
+  display: inline;
+}
+.typewriter-cursor::after {
+  content: '▎';
+  animation: blink-cursor 0.8s step-end infinite;
+  color: #3B82F6;
+  font-weight: normal;
+}
+
+/* ─── Reduced Motion ───────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .floating-symbol,
+  .scan-line,
+  .hero-beam,
+  .loading-logo,
+  .loading-progress {
+    display: none !important;
+  }
+}
