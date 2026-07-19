@@ -75,6 +75,8 @@ export function DeveloperReport({
   language,
   isRoastMode,
 }: DeveloperReportProps) {
+  console.log('DeveloperReport rendering, score:', report?.overallScore)
+  console.log('Summary starts with ERROR:', report?.summary?.startsWith('ERROR:'))
   const [isExporting, setIsExporting] = useState(false);
   const [showExplanationModal, setShowExplanationModal] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
@@ -161,6 +163,34 @@ export function DeveloperReport({
 
   return (
     <div className="space-y-3">
+      {/* WRONG LANGUAGE CHECK - add this first */}
+      {report.overallScore === 0 && 
+       report.summary?.startsWith('ERROR:') && (
+        <div className="p-4">
+          <div className="border border-red-500/50 bg-red-500/10 rounded-2xl p-8">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-3xl">⚠️</span>
+              <h3 className="text-red-400 font-bold text-xl">
+                Wrong Language Selected
+              </h3>
+            </div>
+            <p className="text-zinc-300 mb-4">
+              {report.summary.replace('ERROR: ', '')}
+            </p>
+            <div className="bg-zinc-800/50 rounded-lg p-3 flex items-start gap-2 mt-3">
+              <span className="text-yellow-400">💡</span>
+              <p className="text-zinc-400 text-sm">
+                {report.topRecommendation}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Only show full report if NOT an error */}
+      {!(report.overallScore === 0 && 
+         report.summary?.startsWith('ERROR:')) && (
+        <>
       {/* ── Banners ──────────────────────────────────────────────────────── */}
       {report.overallScore >= 85 && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl bg-gradient-to-r from-emerald-500/20 to-emerald-500/5 border border-emerald-500/30 p-3 text-emerald-200 flex items-center gap-3">
@@ -613,6 +643,8 @@ export function DeveloperReport({
             </div>
           </motion.div>
         </div>
+      )}
+      </>
       )}
     </div>
   );

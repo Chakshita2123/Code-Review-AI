@@ -40,11 +40,13 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net",
+      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
       "img-src 'self' data: https:",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://generativelanguage.googleapis.com",
+      "connect-src 'self' https://generativelanguage.googleapis.com https://cdn.jsdelivr.net",
+      "worker-src 'self' blob:",
+      "child-src 'self' blob:",
     ].join('; '),
   );
   // Unique request ID for tracing — useful when correlating client errors with server logs

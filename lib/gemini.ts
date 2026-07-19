@@ -20,7 +20,7 @@ function getGenAI(): GoogleGenerativeAI {
 function getReviewModel() {
   if (!reviewModel) {
     reviewModel = getGenAI().getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3-flash-preview',
       generationConfig: {
         maxOutputTokens: 2048,
         temperature: 0.3,   // low — we want deterministic, accurate analysis
@@ -34,7 +34,7 @@ function getReviewModel() {
 function getExplainModel() {
   if (!explainModel) {
     explainModel = getGenAI().getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3-flash-preview',
       generationConfig: {
         maxOutputTokens: 1024,
         temperature: 0.5,
@@ -48,7 +48,7 @@ function getExplainModel() {
 function getImproveModel() {
   if (!improveModel) {
     improveModel = getGenAI().getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3-flash-preview',
       generationConfig: {
         maxOutputTokens: 3000,
         temperature: 0.2,   // very low — we want consistent code output
@@ -61,7 +61,7 @@ function getImproveModel() {
 function getChatModel() {
   if (!chatModel) {
     chatModel = getGenAI().getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3-flash-preview',
       systemInstruction: CHAT_SYSTEM_PROMPT,
       generationConfig: {
         maxOutputTokens: 1024,
@@ -246,16 +246,47 @@ Return ONLY valid JSON, no markdown:
 ${language} code:
 ${code}`;
 
-  const prompt = roastMode ? roastPrompt : normalPrompt;
-  const model = getReviewModel();
-  const fallbackReport = createFallbackReview(code, language);
+  const basePrompt = roastMode ? roastPrompt : normalPrompt;
+  const prompt = `IMPORTANT: First verify if the provided code is actually 
+written in ${language}. 
 
-  return runGeminiWithFallback(async () => {
+If the code is NOT in ${language}:
+- Set overallScore to 0
+- Set bugsFound to 1  
+- Set summary to: 'ERROR: This does not appear to be 
+  ${language} code. The code seems to be written in a 
+  different language. Please select the correct language 
+  from the dropdown and try again.'
+- Set finalVerdict to: 'Wrong language selected. Please 
+  select the correct programming language and review again.'
+- Set topRecommendation to: 'Select the correct language 
+  from the dropdown menu.'
+- Set all other numeric scores to 0
+- Return the same JSON structure
+
+If the code IS in ${language}, proceed with full review.
+
+${basePrompt}`;
+  const model = getReviewModel();
+  console.log('[Review] Language:', language, 'RoastMode:', roastMode);
+  console.log('[Review] Using model:', 'gemini-3-flash-preview');
+
+  try {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const rawText = response.text();
+    console.log('[Gemini Review Raw]', rawText);
     return parseGeminiJson(rawText);
-  }, fallbackReport);
+  } catch (error: any) {
+    // Check if it's a quota/rate limit error
+    if (error?.status === 429) {
+      throw new Error('API quota exceeded. Please wait a moment and try again.');
+    }
+    // For other errors, use fallback
+    console.error('[Review] Error:', error?.status, error?.message);
+    console.log('[Review] Using fallback review');
+    return createFallbackReview(code, language);
+  }
 }
 
 // ─── Code Explanation ─────────────────────────────────────────────────────────
