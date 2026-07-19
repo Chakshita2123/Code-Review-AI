@@ -14,6 +14,7 @@ import { useReviews } from '@/hooks/useReviews';
 import { detectLanguage } from '@/utils/detectLanguage';
 import type { IApproach, IDeveloperReport } from '@/types';
 import type { SupportedLanguage } from '@/types';
+import { formatRelativeTime } from '@/utils/formatDate';
 
 const defaultCode = `function fibonacci(n) {
   if (n <= 1) return n;
@@ -25,7 +26,7 @@ const supportedLanguages = ['JavaScript', 'TypeScript', 'Python', 'Java', 'C++',
 export default function NewReviewPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { isLoading, error, report, reviewId, submitReview, explainCode, generateImproved } = useReviews();
+  const { isLoading, error, report, reviewId, streamingStatus, submitReview, explainCode, generateImproved } = useReviews();
   const [code, setCode] = useState(defaultCode);
   const [language, setLanguage] = useState<SupportedLanguage>('JavaScript');
   const [uploadedFileName, setUploadedFileName] = useState('');
@@ -38,6 +39,61 @@ export default function NewReviewPage() {
   const [roastMode, setRoastMode] = useState(false);
   const resultsRef = useRef<HTMLDivElement | null>(null);
   const hasUserChangedLanguage = useRef(false);
+
+  const AUTOSAVE_KEY = 'code-review-ai:autosave';
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+  const toast = ({ title, description }: { title: string; description: string }) => {
+    showToast(`${title} - ${description}`);
+  };
+
+  // Restore on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(AUTOSAVE_KEY);
+      if (saved) {
+        const { code: savedCode, language: savedLang, savedAt } = JSON.parse(saved);
+        const age = Date.now() - savedAt;
+        if (age < 86400000 && savedCode?.trim()) {
+          setCode(savedCode);
+          setLanguage(savedLang || 'JavaScript');
+          toast({ title: '📝 Code Restored', description: 'Your previous session has been restored.' });
+        }
+      }
+    } catch (e) {
+      localStorage.removeItem(AUTOSAVE_KEY);
+    }
+  }, []);
+
+  // Auto-save with 2s debounce
+  useEffect(() => {
+    if (!code.trim()) return;
+    const timer = setTimeout(() => {
+      localStorage.setItem(
+        AUTOSAVE_KEY,
+        JSON.stringify({
+          code,
+          language,
+          savedAt: Date.now(),
+        })
+      );
+      setLastSaved(new Date());
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [code, language]);
+
+  // Sync completion states when report is updated
+  useEffect(() => {
+    if (report) {
+      setReviewComplete(true);
+      setIsSaved(Boolean(reviewId));
+      setExplanation('');
+      setApproaches([]);
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast(`Review complete! Score: ${report.overallScore}/100`);
+      localStorage.removeItem(AUTOSAVE_KEY);
+    }
+  }, [report, reviewId]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -71,15 +127,7 @@ export default function NewReviewPage() {
     if (!code.trim() || isLoading) return;
 
     try {
-      const result = await submitReview(code, language, roastMode);
-      console.log('Review complete, report:', result.report);
-      console.log('isLoading:', isLoading);
-      setReviewComplete(true);
-      setIsSaved(Boolean(reviewId || result.reviewId));
-      setExplanation('');
-      setApproaches([]);
-      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      showToast(`Review complete! Score: ${result.report.overallScore}/100`);
+      await submitReview(code, language, roastMode);
     } catch {
       setReviewComplete(false);
       showToast('Unable to generate the review right now.');
@@ -146,7 +194,7 @@ export default function NewReviewPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#06070b] px-4 py-6 text-white sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[var(--bg-primary)] px-4 py-6 text-[var(--text-primary)] sm:px-6 lg:px-8">
       {toastMessage ? (
         <div className="fixed right-4 top-4 z-50 rounded-2xl border border-blue-500/20 bg-zinc-950/95 px-4 py-3 text-sm text-blue-100 shadow-2xl shadow-blue-500/10">
           {toastMessage}
@@ -154,17 +202,17 @@ export default function NewReviewPage() {
       ) : null}
 
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-zinc-800 bg-zinc-950/70 px-5 py-5 shadow-[0_0_80px_rgba(8,15,30,0.3)]">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[var(--border-primary)] bg-[var(--bg-card)] px-5 py-5 shadow-[0_0_80px_rgba(8,15,30,0.3)]">
           <div>
             <div className="flex items-center gap-2 text-blue-400">
               <Sparkles className="h-5 w-5" />
               <span className="text-sm font-semibold uppercase tracking-[0.2em]">AI Review Studio</span>
             </div>
-            <h1 className="mt-2 text-3xl font-semibold text-white">New Review</h1>
+            <h1 className="mt-2 text-3xl font-semibold text-[var(--text-primary)]">New Review</h1>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-700 bg-transparent px-3 py-2 text-sm font-medium text-zinc-300 transition hover:border-blue-500/40 hover:text-white">
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-700 bg-transparent px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition hover:border-blue-500/40 hover:text-[var(--text-primary)]">
               <Upload className="h-4 w-4" />
               Upload File
               <input type="file" accept=".js,.ts,.py,.java,.cpp,.c,.go,.rs,.php,.cs" className="hidden" onChange={handleUpload} />
@@ -175,7 +223,7 @@ export default function NewReviewPage() {
               Clear
             </Button>
 
-            <Select value={language} onChange={handleLanguageChange} className="w-[180px] bg-zinc-900/70">
+            <Select value={language} onChange={handleLanguageChange} className="w-[180px] bg-[var(--bg-input)]">
               {supportedLanguages.map((option) => (
                 <option key={option} value={option}>
                   {option}
@@ -188,7 +236,7 @@ export default function NewReviewPage() {
               className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition ${
                 roastMode
                   ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20'
-                  : 'border-zinc-700 bg-transparent text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
+                  : 'border-zinc-700 bg-transparent text-[var(--text-secondary)] hover:border-zinc-600 hover:text-[var(--text-primary)]'
               }`}
               title="Get brutally honest feedback"
             >
@@ -210,7 +258,7 @@ export default function NewReviewPage() {
                   </>
                 )}
               </Button>
-              <div className="flex items-center gap-1.5 text-[11px] text-zinc-500">
+              <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)]">
                 <Lock className="h-3 w-3 text-emerald-500/70" />
                 <span>Your code is processed securely &amp; privately</span>
               </div>
@@ -218,19 +266,26 @@ export default function NewReviewPage() {
           </div>
         </div>
 
-        {uploadedFileName ? <div className="text-sm text-zinc-400">Loaded file: {uploadedFileName}</div> : null}
+        {uploadedFileName ? <div className="text-sm text-[var(--text-secondary)]">Loaded file: {uploadedFileName}</div> : null}
 
         <div className="flex h-[calc(100vh-80px)] gap-4">
-          <div className={`relative flex-none w-[55%] overflow-hidden rounded-2xl border bg-[#09090d] ${isLoading ? 'border-pulse-blue border-blue-500/30' : 'border-zinc-800'}`}>
-            {isLoading && <div className="scan-line" />}
-            <CodeEditor value={code} language={language} onChange={setCode} />
+          <div className="flex flex-col flex-none w-[55%]">
+            <div className={`relative flex-1 overflow-hidden rounded-2xl border bg-[var(--bg-card)] ${isLoading ? 'border-pulse-blue border-blue-500/30' : 'border-[var(--border-primary)]'}`}>
+              {isLoading && <div className="scan-line" />}
+              <CodeEditor value={code} language={language} onChange={setCode} />
+            </div>
+            {lastSaved && (
+              <p className="text-xs text-[var(--text-secondary)] mt-1 px-1">
+                💾 Auto-saved {formatRelativeTime(lastSaved)}
+              </p>
+            )}
           </div>
 
-          <div ref={resultsRef} className="flex-1 overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
+          <div ref={resultsRef} className="flex-1 overflow-y-auto rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4">
             <AnimatePresence mode="wait">
               {isLoading ? (
                 <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <ReviewLoader isRoastMode={roastMode} />
+                  <ReviewLoader isRoastMode={roastMode} streamingStatus={streamingStatus} />
                 </motion.div>
               ) : report ? (
                 <motion.div key="report" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
@@ -249,15 +304,15 @@ export default function NewReviewPage() {
                   />
                 </motion.div>
               ) : (
-                <motion.div key="empty" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-zinc-800 bg-zinc-900/50 p-8 text-center">
+                <motion.div key="empty" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-[var(--border-primary)] bg-[var(--bg-card)] p-8 text-center">
                   <div className="mb-5 rounded-full border border-zinc-700 bg-zinc-800/70 p-4 text-zinc-500">
                     <ScanSearch className="h-8 w-8" />
                   </div>
-                  <h2 className="text-2xl font-semibold text-white">Your review will appear here</h2>
-                  <p className="mt-3 max-w-sm text-sm leading-7 text-zinc-400">Paste your code and click Review Code to receive a detailed AI-powered analysis.</p>
+                  <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Your review will appear here</h2>
+                  <p className="mt-3 max-w-sm text-sm leading-7 text-[var(--text-secondary)]">Paste your code and click Review Code to receive a detailed AI-powered analysis.</p>
                   <div className="mt-6 flex flex-wrap justify-center gap-3">
                     {['Bug Detection', 'Performance', 'Security'].map((pill) => (
-                      <span key={pill} className="rounded-full border border-zinc-700 bg-zinc-950/70 px-3 py-1.5 text-sm text-zinc-400">
+                      <span key={pill} className="rounded-full border border-[var(--border-primary)] bg-[var(--bg-primary)] px-3 py-1.5 text-sm text-[var(--text-secondary)]">
                         {pill}
                       </span>
                     ))}

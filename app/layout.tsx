@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
+import { ThemeProvider } from '@/context/ThemeContext';
 import { CursorGlow } from '@/components/ui/CursorGlow';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import './globals.css';
@@ -16,11 +17,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
-        <SessionProvider>
-          <LoadingScreen />
-          <CursorGlow />
-          {children}
-        </SessionProvider>
+        <ThemeProvider>
+          <SessionProvider>
+            <LoadingScreen />
+            <CursorGlow />
+            {children}
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

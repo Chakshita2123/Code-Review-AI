@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { FileCode, TrendingUp, Bug, Code2, Sparkles, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -88,64 +88,84 @@ export default function DashboardPage() {
   const [langDistribution, setLangDistribution] = useState<Record<string, number> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
+
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      const [sRes, hRes] = await Promise.all([
+        fetch('/api/stats'),
+        fetch('/api/history?limit=10'),
+      ]);
+      const sJson = await sRes.json();
+      const hJson = await hRes.json();
+
+      if (!sJson.success) throw new Error(sJson.message || 'Failed to load stats');
+      if (!hJson.success) throw new Error(hJson.message || 'Failed to load history');
+
+      setStats({
+        totalReviews: sJson.data.totalReviews || 0,
+        averageScore: sJson.data.averageScore || 0,
+        totalBugsFound: sJson.data.totalBugsFound || 0,
+        languagesUsed: sJson.data.languagesUsed || 0,
+        weeklyNew: sJson.data.weeklyNew || 0,
+      });
+
+      const reviews = hJson.reviews || [];
+      setRecent(reviews.map((r: any) => ({ ...r, createdAt: new Date(r.createdAt).toISOString() })));
+
+      // Trend: last 10 reviews (reverse chronological -> chronological)
+      const trendData = (hJson.reviews || [])
+        .slice(0, 10)
+        .map((r: any) => ({ date: new Date(r.createdAt).toISOString(), score: r.overallScore }))
+        .reverse()
+        .map((d: any) => ({ date: new Date(d.date).toLocaleDateString(), score: d.score }));
+      setTrend(trendData);
+
+      // Language distribution
+      const byLang: Record<string, number> = {};
+      (hJson.reviews || []).forEach((r: any) => {
+        byLang[r.language] = (byLang[r.language] || 0) + 1;
+      });
+      setLangDistribution(Object.keys(byLang).length ? byLang : null);
+
+      setError(null);
+      setLastUpdated(new Date());
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || 'Unable to load dashboard');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Custom polling hook
+  const useInterval = (callback: () => void, delay: number) => {
+    const savedCallback = useRef(callback);
+    useEffect(() => {
+      savedCallback.current = callback;
+    }, [callback]);
+    useEffect(() => {
+      const id = setInterval(() => savedCallback.current(), delay);
+      return () => clearInterval(id);
+    }, [delay]);
+  };
+
+  // Poll every 30 seconds
+  useInterval(fetchDashboardData, 30000);
+
+  // Listen for new review events
+  useEffect(() => {
+    const handleNewReview = () => {
+      void fetchDashboardData();
+    };
+    window.addEventListener('reviewComplete', handleNewReview);
+    return () => window.removeEventListener('reviewComplete', handleNewReview);
+  }, [fetchDashboardData]);
 
   useEffect(() => {
-    let mounted = true;
-    async function load() {
-      setLoading(true);
-      try {
-        const [sRes, hRes] = await Promise.all([
-          fetch('/api/stats'),
-          fetch('/api/history?limit=10'),
-        ]);
-        const sJson = await sRes.json();
-        const hJson = await hRes.json();
-
-        if (!mounted) return;
-
-        if (!sJson.success) throw new Error(sJson.message || 'Failed to load stats');
-        if (!hJson.success) throw new Error(hJson.message || 'Failed to load history');
-
-        setStats({
-          totalReviews: sJson.data.totalReviews || 0,
-          averageScore: sJson.data.averageScore || 0,
-          totalBugsFound: sJson.data.totalBugsFound || 0,
-          languagesUsed: sJson.data.languagesUsed || 0,
-          weeklyNew: sJson.data.weeklyNew || 0,
-        });
-
-        const reviews = hJson.reviews || [];
-        setRecent(reviews.map((r: any) => ({ ...r, createdAt: new Date(r.createdAt).toISOString() })));
-
-        // Trend: last 10 reviews (reverse chronological -> chronological)
-        const trendData = (hJson.reviews || [])
-          .slice(0, 10)
-          .map((r: any) => ({ date: new Date(r.createdAt).toISOString(), score: r.overallScore }))
-          .reverse()
-          .map((d: any) => ({ date: new Date(d.date).toLocaleDateString(), score: d.score }));
-        setTrend(trendData);
-
-        // Language distribution
-        const byLang: Record<string, number> = {};
-        (hJson.reviews || []).forEach((r: any) => {
-          byLang[r.language] = (byLang[r.language] || 0) + 1;
-        });
-        setLangDistribution(Object.keys(byLang).length ? byLang : null);
-
-        setError(null);
-      } catch (err: any) {
-        console.error(err);
-        setError(err?.message || 'Unable to load dashboard');
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    setLoading(true);
+    void fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const totalReviewsCount = useCountUp(stats?.totalReviews || 0);
   const avgScoreCount = useCountUp(Math.round(stats?.averageScore || 0));
@@ -159,14 +179,26 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#0A0A0A] p-4 sm:p-8 text-white">
+    <main className="min-h-screen bg-[var(--bg-primary)] p-4 sm:p-8 text-[var(--text-primary)]">
       <div className="gradient-border-animated mx-auto max-w-7xl rounded-3xl">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-2xl font-semibold">{greeting}, {firstName}!</h2>
-            <p className="mt-1 text-sm text-zinc-400">Here's an overview of your code quality journey</p>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">Here's an overview of your code quality journey</p>
           </div>
-          <div>
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              <span className="text-xs text-[var(--text-secondary)]">
+                Live · Updated {formatRelativeTime(lastUpdated)}
+              </span>
+              <button
+                onClick={fetchDashboardData}
+                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                ↻ Refresh
+              </button>
+            </div>
             <Link href="/new-review" className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium shadow hover:bg-blue-700">
               <Sparkles className="h-4 w-4" />
               New Review
@@ -177,64 +209,64 @@ export default function DashboardPage() {
         <motion.div initial="hidden" animate="show" className="mt-6 grid gap-4 md:grid-cols-4">
           {loading && (
             <>
-              <Skeleton className="h-28 rounded-2xl bg-[#111111] border border-zinc-800 p-6" />
-              <Skeleton className="h-28 rounded-2xl bg-[#111111] border border-zinc-800 p-6" />
-              <Skeleton className="h-28 rounded-2xl bg-[#111111] border border-zinc-800 p-6" />
-              <Skeleton className="h-28 rounded-2xl bg-[#111111] border border-zinc-800 p-6" />
+              <Skeleton className="h-28 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6" />
+              <Skeleton className="h-28 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6" />
+              <Skeleton className="h-28 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6" />
+              <Skeleton className="h-28 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6" />
             </>
           )}
 
           {!loading && stats && (
             <>
-              <motion.div variants={statCardVariants} className="stat-glow-blue rounded-2xl bg-[#111111] border border-zinc-800 p-6 hover:-translate-y-1 hover:border-zinc-700 transition">
+              <motion.div variants={statCardVariants} className="stat-glow-blue rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6 hover:-translate-y-1 hover:border-zinc-750 transition">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-full bg-blue-700 p-2 text-white"><FileCode className="h-5 w-5" /></div>
+                    <div className="rounded-full bg-blue-700 p-2 text-[var(--text-primary)]"><FileCode className="h-5 w-5" /></div>
                     <div>
-                      <p className="text-sm text-zinc-400">Reviews completed</p>
+                      <p className="text-sm text-[var(--text-secondary)]">Reviews completed</p>
                       <h3 className="mt-1 text-2xl font-semibold">{totalReviewsCount}</h3>
-                      <p className="mt-1 text-xs text-zinc-500">+{stats.weeklyNew || 0} this week</p>
+                      <p className="mt-1 text-xs text-[var(--text-secondary)]">+{stats.weeklyNew || 0} this week</p>
                     </div>
                   </div>
                 </div>
               </motion.div>
 
-              <motion.div variants={statCardVariants} className="stat-glow-green rounded-2xl bg-[#111111] border border-zinc-800 p-6 hover:-translate-y-1 hover:border-zinc-700 transition">
+              <motion.div variants={statCardVariants} className="stat-glow-green rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6 hover:-translate-y-1 hover:border-zinc-750 transition">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-full bg-green-700 p-2 text-white"><TrendingUp className="h-5 w-5" /></div>
+                    <div className="rounded-full bg-green-700 p-2 text-[var(--text-primary)]"><TrendingUp className="h-5 w-5" /></div>
                     <div>
-                      <p className="text-sm text-zinc-400">Average code score</p>
+                      <p className="text-sm text-[var(--text-secondary)]">Average code score</p>
                       <h3 className="mt-1 text-2xl font-semibold">
                         {avgScoreCount}
-                        <span className="text-sm text-zinc-400">/100</span>
+                        <span className="text-sm text-[var(--text-secondary)]">/100</span>
                       </h3>
                     </div>
                   </div>
                 </div>
               </motion.div>
 
-              <motion.div variants={statCardVariants} className="stat-glow-red rounded-2xl bg-[#111111] border border-zinc-800 p-6 hover:-translate-y-1 hover:border-zinc-700 transition">
+              <motion.div variants={statCardVariants} className="stat-glow-red rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6 hover:-translate-y-1 hover:border-zinc-750 transition">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-full bg-red-700 p-2 text-white"><Bug className="h-5 w-5" /></div>
+                    <div className="rounded-full bg-red-700 p-2 text-[var(--text-primary)]"><Bug className="h-5 w-5" /></div>
                     <div>
-                      <p className="text-sm text-zinc-400">Total bugs detected</p>
+                      <p className="text-sm text-[var(--text-secondary)]">Total bugs detected</p>
                       <h3 className="mt-1 text-2xl font-semibold">{totalBugsCount}</h3>
-                      <p className="mt-1 text-xs text-zinc-500">Across all reviews</p>
+                      <p className="mt-1 text-xs text-[var(--text-secondary)]">Across all reviews</p>
                     </div>
                   </div>
                 </div>
               </motion.div>
 
-              <motion.div variants={statCardVariants} className="stat-glow-purple rounded-2xl bg-[#111111] border border-zinc-800 p-6 hover:-translate-y-1 hover:border-zinc-700 transition">
+              <motion.div variants={statCardVariants} className="stat-glow-purple rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6 hover:-translate-y-1 hover:border-zinc-750 transition">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-full bg-purple-700 p-2 text-white"><Code2 className="h-5 w-5" /></div>
+                    <div className="rounded-full bg-purple-700 p-2 text-[var(--text-primary)]"><Code2 className="h-5 w-5" /></div>
                     <div>
-                      <p className="text-sm text-zinc-400">Languages analyzed</p>
+                      <p className="text-sm text-[var(--text-secondary)]">Languages analyzed</p>
                       <h3 className="mt-1 text-2xl font-semibold">{stats.languagesUsed}</h3>
-                      <p className="mt-1 text-xs text-zinc-500">Out of 10 supported</p>
+                      <p className="mt-1 text-xs text-[var(--text-secondary)]">Out of 10 supported</p>
                     </div>
                   </div>
                 </div>
@@ -244,13 +276,13 @@ export default function DashboardPage() {
         </motion.div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <div className="md:col-span-2 lg:col-span-2 col-span-3 rounded-2xl bg-[#111111] border border-zinc-800 p-6">
+          <div className="md:col-span-2 lg:col-span-2 col-span-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <TrendingUp className="h-5 w-5 text-zinc-200" />
+                <TrendingUp className="h-5 w-5 text-[var(--text-primary)]" />
                 <h4 className="text-lg font-semibold">Score Trend</h4>
               </div>
-              <div className="text-sm text-zinc-400">Last 10 reviews</div>
+              <div className="text-sm text-[var(--text-secondary)]">Last 10 reviews</div>
             </div>
 
             <div className="mt-4 h-64">
@@ -272,9 +304,9 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-[#111111] border border-zinc-800 p-6">
+          <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6">
             <div className="flex items-center gap-3">
-              <Code2 className="h-5 w-5 text-zinc-200" />
+              <Code2 className="h-5 w-5 text-[var(--text-primary)]" />
               <h4 className="text-lg font-semibold">Languages Used</h4>
             </div>
             <div className="mt-4">
@@ -298,7 +330,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <div className="md:col-span-2 col-span-3 rounded-2xl bg-[#111111] border border-zinc-800 p-6">
+          <div className="md:col-span-2 col-span-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6">
             <div className="flex items-center justify-between">
               <h4 className="text-lg font-semibold">Recent Reviews</h4>
               <Link href="/history" className="text-sm text-blue-500">View All</Link>
@@ -328,12 +360,12 @@ export default function DashboardPage() {
               )}
 
               {!loading && recent && recent.map((r) => (
-                <div key={r.id} className="flex items-center justify-between gap-4 rounded-md border border-zinc-800 bg-[#0f0f0f] p-3">
+                <div key={r.id} className="flex items-center justify-between gap-4 rounded-md border border-[var(--border-primary)] bg-[var(--bg-card)] p-3">
                   <div className="flex items-center gap-3">
                     <div className={`h-10 w-10 rounded-md ${languageColors[r.language] || 'bg-zinc-500'} flex items-center justify-center text-black font-bold`}>{r.language.slice(0,2)}</div>
                     <div>
                       <div className="max-w-xl truncate text-sm">{r.finalVerdict}</div>
-                      <div className="mt-1 text-xs text-zinc-500">{formatRelativeTime(r.createdAt)}</div>
+                      <div className="mt-1 text-xs text-[var(--text-secondary)]">{formatRelativeTime(r.createdAt)}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -346,7 +378,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-[#111111] border border-zinc-800 p-6">
+          <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6">
             <h4 className="text-lg font-semibold">Quick Actions</h4>
             <div className="mt-4 flex flex-col gap-3">
               <Link href="/new-review" className="rounded-md bg-blue-600 px-4 py-2 text-center">New Review</Link>

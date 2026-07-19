@@ -156,7 +156,7 @@ function HistorySkeleton() {
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="rounded-2xl border border-zinc-800 bg-[#111111] p-6"
+          className="rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-6"
         >
           <div className="flex items-center justify-between">
             <Skeleton className="h-6 w-24 rounded-full" />
@@ -205,11 +205,11 @@ function StatsBar({
       initial={{ opacity: 0, y: -6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-zinc-800 bg-gradient-to-r from-zinc-900/80 to-[#111111]/80 px-5 py-3 text-sm backdrop-blur"
+      className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-[var(--border-primary)] bg-gradient-to-r from-zinc-900/80 to-[var(--bg-card)]/80 px-5 py-3 text-sm backdrop-blur"
     >
-      <div className="flex items-center gap-2 text-zinc-400">
+      <div className="flex items-center gap-2 text-[var(--text-secondary)]">
         <BarChart3 className="h-3.5 w-3.5 text-blue-400" />
-        <span className="font-semibold text-white">{total}</span> total reviews
+        <span className="font-semibold text-[var(--text-primary)]">{total}</span> total reviews
       </div>
       <span className="hidden text-zinc-700 sm:inline">·</span>
       <div className="flex items-center gap-2 text-zinc-400">
@@ -414,7 +414,7 @@ function HistoryPageContent() {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-[#0A0A0A] p-4 text-white sm:p-6 lg:p-8">
+    <main className="min-h-screen bg-[var(--bg-primary)] p-4 text-[var(--text-primary)] sm:p-6 lg:p-8">
       <div className="mx-auto max-w-5xl">
 
         {/* ── Page header ─────────────────────────────────────────────── */}
@@ -430,10 +430,10 @@ function HistoryPageContent() {
               <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-blue-500/10 to-transparent opacity-50" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+              <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] sm:text-3xl">
                 Review History
               </h1>
-              <p className="mt-1 text-sm text-zinc-400">All your past code reviews in one place</p>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">All your past code reviews in one place</p>
             </div>
           </div>
 
@@ -451,7 +451,7 @@ function HistoryPageContent() {
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.05 }}
-          className="mb-6 flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 backdrop-blur lg:flex-row lg:items-center"
+          className="mb-6 flex flex-col gap-3 rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-card)]/40 p-4 backdrop-blur lg:flex-row lg:items-center"
         >
           {/* Search input */}
           <div className="relative flex-1">
@@ -461,7 +461,7 @@ function HistoryPageContent() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search reviews..."
-              className="border-zinc-700/50 bg-[#0f0f0f] pl-10 text-white placeholder:text-zinc-600 focus:border-blue-500/50 focus:ring-blue-500/20"
+              className="border-zinc-700/50 bg-[var(--bg-input)] pl-10 text-[var(--text-primary)] placeholder:text-zinc-650 focus:border-blue-500/50 focus:ring-blue-500/20"
             />
           </div>
 
@@ -524,12 +524,12 @@ function HistoryPageContent() {
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 bg-gradient-to-br from-[#111111] to-zinc-900/50 px-6 py-20 text-center"
+            className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-primary)] bg-gradient-to-br from-[var(--bg-card)] to-zinc-900/50 px-6 py-20 text-center"
           >
             <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl border border-zinc-700/50 bg-zinc-800/50">
               <History className="h-10 w-10 text-zinc-500" />
             </div>
-            <h2 className="text-xl font-semibold text-white">No reviews yet</h2>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)]">No reviews yet</h2>
             <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-500">
               Run your first code review and it will appear here automatically.
             </p>
@@ -546,12 +546,12 @@ function HistoryPageContent() {
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 bg-gradient-to-br from-[#111111] to-zinc-900/50 px-6 py-20 text-center"
+            className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-primary)] bg-gradient-to-br from-[var(--bg-card)] to-zinc-900/50 px-6 py-20 text-center"
           >
             <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl border border-zinc-700/50 bg-zinc-800/50">
               <Search className="h-10 w-10 text-zinc-500" />
             </div>
-            <h2 className="text-xl font-semibold text-white">No reviews match your search</h2>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)]">No reviews match your search</h2>
             <p className="mt-2 text-sm text-zinc-500">Try different filters or clear your search</p>
             {hasActiveFilters && (
               <button
@@ -580,7 +580,7 @@ function HistoryPageContent() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.97, height: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}
                       transition={{ duration: 0.2, delay: index * 0.03 }}
-                      className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-[#111111] p-6 transition-all duration-200 hover:border-zinc-700 hover:shadow-xl hover:shadow-black/30"
+                      className="group relative overflow-hidden rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-6 transition-all duration-200 hover:border-zinc-700 hover:shadow-xl hover:shadow-black/30"
                     >
                       {/* Subtle gradient glow on hover */}
                       <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/0 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:from-blue-500/3" />
@@ -751,7 +751,7 @@ function HistoryPageContent() {
                     type="button"
                     disabled={page <= 1}
                     onClick={() => updateParams({ page: String(page - 1) })}
-                    className="inline-flex items-center gap-1 rounded-lg border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 transition hover:border-zinc-700 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                    className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-primary)] px-3 py-1.5 text-sm text-[var(--text-secondary)] transition hover:border-zinc-700 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous
@@ -766,7 +766,7 @@ function HistoryPageContent() {
                       className={`min-w-[36px] rounded-lg border px-2 py-1.5 text-sm transition ${
                         num === page
                           ? 'border-blue-500/40 bg-blue-500/10 font-semibold text-blue-400 shadow-sm shadow-blue-500/10'
-                          : 'border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white'
+                          : 'border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-zinc-700 hover:text-white'
                       }`}
                     >
                       {num}
@@ -778,7 +778,7 @@ function HistoryPageContent() {
                     type="button"
                     disabled={page >= totalPages}
                     onClick={() => updateParams({ page: String(page + 1) })}
-                    className="inline-flex items-center gap-1 rounded-lg border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 transition hover:border-zinc-700 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                    className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-primary)] px-3 py-1.5 text-sm text-[var(--text-secondary)] transition hover:border-zinc-700 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Next
                     <ChevronRight className="h-4 w-4" />
@@ -822,7 +822,7 @@ function HistoryPageContent() {
 // ─── Suspense fallback ────────────────────────────────────────────────────────
 function HistoryPageFallback() {
   return (
-    <main className="min-h-screen bg-[#0A0A0A] p-4 sm:p-6 lg:p-8">
+    <main className="min-h-screen bg-[var(--bg-primary)] p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8 flex items-start gap-4">
           <Skeleton className="h-12 w-12 rounded-2xl" />

@@ -28,6 +28,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
   
   // Edit Name State
   const [isEditingName, setIsEditingName] = useState(false);
@@ -178,33 +179,33 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <h1 className="mb-8 text-2xl font-bold text-white">Settings</h1>
+      <h1 className="mb-8 text-2xl font-bold text-[var(--text-primary)]">Settings</h1>
 
       <div className="space-y-8">
         {/* ── Appearance ──────────────────────────────────────────────── */}
         <section>
           <h2 className="mb-4 text-sm font-medium text-zinc-400">Appearance</h2>
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/30 overflow-hidden">
-            <div className="flex items-center justify-between p-5">
-              <div>
-                <h3 className="text-sm font-medium text-white">Theme</h3>
-                <p className="mt-1 text-xs text-zinc-500">Currently dark mode only</p>
-              </div>
-              <div className="rounded-md border border-zinc-800 bg-zinc-800/50 px-2.5 py-1 text-xs font-medium text-zinc-300">
-                Dark Mode
-              </div>
+          <div className="flex items-center justify-between p-5 rounded-xl border border-zinc-800 bg-[#111111]">
+            <div>
+              <p className="font-medium text-white">Theme</p>
+              <p className="text-sm text-zinc-400 mt-0.5">
+                🌙 Dark mode only
+              </p>
             </div>
+            <span className="text-xs text-zinc-500 bg-zinc-800 px-3 py-1.5 rounded-lg">
+              Dark Mode
+            </span>
           </div>
         </section>
 
         {/* ── Account ─────────────────────────────────────────────────── */}
         <section>
-          <h2 className="mb-4 text-sm font-medium text-zinc-400">Account</h2>
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/30 overflow-hidden divide-y divide-zinc-800/50">
+          <h2 className="mb-4 text-sm font-medium text-[var(--text-secondary)]">Account</h2>
+          <div className="rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-card)]/30 overflow-hidden divide-y divide-[var(--border-primary)]/50">
             {/* Display Name */}
             <div className="flex items-center justify-between p-5">
               <div className="flex-1 mr-4">
-                <h3 className="text-sm font-medium text-white">Display Name</h3>
+                <h3 className="text-sm font-medium text-[var(--text-primary)]">Display Name</h3>
                 {isEditingName ? (
                   <div className="mt-2 flex items-center gap-2">
                     <Input
@@ -228,19 +229,19 @@ export default function SettingsPage() {
                         setEditNameValue(profile.name);
                       }}
                       disabled={isSavingName}
-                      className="rounded px-3 py-1.5 text-xs font-medium text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                      className="rounded px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"
                     >
                       Cancel
                     </button>
                   </div>
                 ) : (
-                  <p className="mt-1 text-sm text-zinc-400">{profile.name}</p>
+                  <p className="mt-1 text-sm text-[var(--text-secondary)]">{profile.name}</p>
                 )}
               </div>
               {!isEditingName && (
                 <button
                   onClick={() => setIsEditingName(true)}
-                  className="flex items-center gap-1.5 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-300 transition hover:bg-zinc-800"
+                  className="flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] transition hover:bg-[var(--bg-tertiary)]"
                 >
                   <Edit2 className="h-3 w-3" /> Edit
                 </button>
@@ -250,8 +251,8 @@ export default function SettingsPage() {
             {/* Email */}
             <div className="flex items-center justify-between p-5">
               <div>
-                <h3 className="text-sm font-medium text-white">Email</h3>
-                <p className="mt-1 text-sm text-zinc-400">{profile.email}</p>
+                <h3 className="text-sm font-medium text-[var(--text-primary)]">Email</h3>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">{profile.email}</p>
               </div>
               <div className="rounded-md bg-blue-500/10 px-2.5 py-1 text-[11px] font-medium text-blue-400 border border-blue-500/20">
                 Google managed
@@ -261,7 +262,7 @@ export default function SettingsPage() {
             {/* Photo */}
             <div className="flex items-center justify-between p-5">
               <div>
-                <h3 className="text-sm font-medium text-white">Profile Photo</h3>
+                <h3 className="text-sm font-medium text-[var(--text-primary)]">Profile Photo</h3>
               </div>
               <div className="rounded-md bg-blue-500/10 px-2.5 py-1 text-[11px] font-medium text-blue-400 border border-blue-500/20">
                 Google managed
@@ -272,17 +273,17 @@ export default function SettingsPage() {
 
         {/* ── Security ─────────────────────────────────────────────────── */}
         <section>
-          <h2 className="mb-4 text-sm font-medium text-zinc-400">Security</h2>
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/30 overflow-hidden divide-y divide-zinc-800/50">
+          <h2 className="mb-4 text-sm font-medium text-[var(--text-secondary)]">Security</h2>
+          <div className="rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-card)]/30 overflow-hidden divide-y divide-[var(--border-primary)]/50">
             {/* Auth Provider */}
             <div className="flex items-center justify-between p-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800/50">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-primary)] bg-[var(--bg-card)]/50">
                   <Shield className="h-4 w-4 text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-white">Authentication</h3>
-                  <p className="mt-0.5 text-xs text-zinc-500">How you sign in to your account</p>
+                  <h3 className="text-sm font-medium text-[var(--text-primary)]">Authentication</h3>
+                  <p className="mt-0.5 text-xs text-[var(--text-secondary)]">How you sign in to your account</p>
                 </div>
               </div>
               <div className="rounded-md bg-blue-500/10 px-2.5 py-1 text-[11px] font-medium text-blue-400 border border-blue-500/20">
@@ -293,12 +294,12 @@ export default function SettingsPage() {
             {/* Data Encryption */}
             <div className="flex items-center justify-between p-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800/50">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-primary)] bg-[var(--bg-card)]/50">
                   <Lock className="h-4 w-4 text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-white">Data Encryption</h3>
-                  <p className="mt-0.5 text-xs text-zinc-500">Your data is encrypted in transit and at rest</p>
+                  <h3 className="text-sm font-medium text-[var(--text-primary)]">Data Encryption</h3>
+                  <p className="mt-0.5 text-xs text-[var(--text-secondary)]">Your data is encrypted in transit and at rest</p>
                 </div>
               </div>
               <div className="rounded-md bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-400 border border-emerald-500/20">
@@ -309,12 +310,12 @@ export default function SettingsPage() {
             {/* Session */}
             <div className="flex items-center justify-between p-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800/50">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-primary)] bg-[var(--bg-card)]/50">
                   <ShieldCheck className="h-4 w-4 text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-white">Active Session</h3>
-                  <p className="mt-0.5 text-xs text-zinc-500">Sessions expire automatically after 7 days</p>
+                  <h3 className="text-sm font-medium text-[var(--text-primary)]">Active Session</h3>
+                  <p className="mt-0.5 text-xs text-[var(--text-secondary)]">Sessions expire automatically after 7 days</p>
                 </div>
               </div>
               <div className="rounded-md bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-400 border border-emerald-500/20">
@@ -325,12 +326,12 @@ export default function SettingsPage() {
             {/* Privacy */}
             <div className="flex items-center justify-between p-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800/50">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-primary)] bg-[var(--bg-card)]/50">
                   <Lock className="h-4 w-4 text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-white">Review Privacy</h3>
-                  <p className="mt-0.5 text-xs text-zinc-500">Reviews are private and only visible to you</p>
+                  <h3 className="text-sm font-medium text-[var(--text-primary)]">Review Privacy</h3>
+                  <p className="mt-0.5 text-xs text-[var(--text-secondary)]">Reviews are private and only visible to you</p>
                 </div>
               </div>
               <div className="rounded-md bg-blue-500/10 px-2.5 py-1 text-[11px] font-medium text-blue-400 border border-blue-500/20">
@@ -342,18 +343,18 @@ export default function SettingsPage() {
 
         {/* ── Data & Privacy ──────────────────────────────────────────── */}
         <section>
-          <h2 className="mb-4 text-sm font-medium text-zinc-400">Data & Privacy</h2>
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/30 overflow-hidden divide-y divide-zinc-800/50">
+          <h2 className="mb-4 text-sm font-medium text-[var(--text-secondary)]">Data & Privacy</h2>
+          <div className="rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-card)]/30 overflow-hidden divide-y divide-[var(--border-primary)]/50">
             {/* Export */}
             <div className="flex items-center justify-between p-5">
               <div>
-                <h3 className="text-sm font-medium text-white">Export Reviews</h3>
-                <p className="mt-1 text-xs text-zinc-500">Download all your reviews as JSON</p>
+                <h3 className="text-sm font-medium text-[var(--text-primary)]">Export Reviews</h3>
+                <p className="mt-1 text-xs text-[var(--text-secondary)]">Download all your reviews as JSON</p>
               </div>
               <button
                 onClick={() => void handleExportData()}
                 disabled={isExporting}
-                className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-transparent px-3 py-1.5 text-xs font-medium text-white transition hover:bg-zinc-800 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] bg-transparent px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] transition hover:bg-[var(--bg-tertiary)] disabled:opacity-50"
               >
                 {isExporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
                 Export
@@ -363,8 +364,8 @@ export default function SettingsPage() {
             {/* Clear History */}
             <div className="flex items-center justify-between p-5">
               <div>
-                <h3 className="text-sm font-medium text-white">Clear Review History</h3>
-                <p className="mt-1 text-xs text-zinc-500">Delete all your saved reviews permanently</p>
+                <h3 className="text-sm font-medium text-[var(--text-primary)]">Clear Review History</h3>
+                <p className="mt-1 text-xs text-[var(--text-secondary)]">Delete all your saved reviews permanently</p>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -373,15 +374,15 @@ export default function SettingsPage() {
                     Clear All
                   </button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="border-zinc-800 bg-[#111] text-white">
+                <AlertDialogContent className="border-[var(--border-primary)] bg-[var(--bg-card)] text-[var(--text-primary)]">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Clear All Reviews</AlertDialogTitle>
-                    <AlertDialogDescription className="text-zinc-400">
+                    <AlertDialogDescription className="text-[var(--text-secondary)]">
                       This will permanently delete all your code reviews. This cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel className="border-zinc-700 bg-transparent hover:bg-zinc-800 hover:text-white">
+                    <AlertDialogCancel className="border-[var(--border-primary)] bg-transparent hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
                       Cancel
                     </AlertDialogCancel>
                     <AlertDialogAction
@@ -416,13 +417,13 @@ export default function SettingsPage() {
                     Delete Account
                   </button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="border-red-900/50 bg-[#111] text-white">
+                <AlertDialogContent className="border-red-900/50 bg-[var(--bg-card)] text-[var(--text-primary)]">
                   <AlertDialogHeader>
                     <AlertDialogTitle className="text-red-400">Delete Account</AlertDialogTitle>
-                    <AlertDialogDescription className="text-zinc-400">
+                    <AlertDialogDescription className="text-[var(--text-secondary)]">
                       This will permanently delete your account, all reviews, and all conversations. This cannot be undone.
                       <br /><br />
-                      Type <span className="font-semibold text-white">{profile.email}</span> to confirm.
+                      Type <span className="font-semibold text-[var(--text-primary)]">{profile.email}</span> to confirm.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <div className="py-2">
@@ -430,11 +431,11 @@ export default function SettingsPage() {
                       value={deleteEmailConfirm}
                       onChange={(e) => setDeleteEmailConfirm(e.target.value)}
                       placeholder={profile.email}
-                      className="border-zinc-700 bg-zinc-900"
+                      className="border-[var(--border-primary)] bg-[var(--bg-card)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
                     />
                   </div>
                   <AlertDialogFooter>
-                    <AlertDialogCancel className="border-zinc-700 bg-transparent hover:bg-zinc-800 hover:text-white">
+                    <AlertDialogCancel className="border-[var(--border-primary)] bg-transparent hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
                       Cancel
                     </AlertDialogCancel>
                     <button
@@ -452,12 +453,12 @@ export default function SettingsPage() {
             {/* Sign Out */}
             <div className="flex items-center justify-between p-5">
               <div>
-                <h3 className="text-sm font-medium text-white">Sign Out</h3>
-                <p className="mt-1 text-xs text-zinc-500">Sign out of your account on this device</p>
+                <h3 className="text-sm font-medium text-[var(--text-primary)]">Sign Out</h3>
+                <p className="mt-1 text-xs text-[var(--text-secondary)]">Sign out of your account on this device</p>
               </div>
               <button
                 onClick={() => void signOut({ callbackUrl: '/' })}
-                className="flex items-center gap-1.5 rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
+                className="flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] transition hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"
               >
                 <LogOut className="h-3.5 w-3.5" />
                 Sign Out

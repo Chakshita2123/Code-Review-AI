@@ -8,35 +8,62 @@ export function useReviews() {
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<IDeveloperReport | null>(null);
   const [reviewId, setReviewId] = useState<string | null>(null);
+  const [streamingStatus, setStreamingStatus] = useState<string | null>(null);
 
   const submitReview = useCallback(async (code: string, language: string, roastMode = false) => {
     setIsLoading(true);
     setError(null);
     setReport(null);
-    setReviewId(null);
+    setStreamingStatus('Analyzing your code...');
 
     try {
-      const response = await fetch('/api/review', {
+      const response = await fetch('/api/review/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, language, roastMode }),
       });
 
-      const data = await response.json();
-      console.log('Full API response:', data);
-      console.log('Setting report:', data.report);
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || 'Unable to submit review');
-      }
+      if (!response.ok) throw new Error('Failed');
 
-      setReport(data.report);
-      setReviewId(data.reviewId);
-      return data;
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No reader');
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const text = decoder.decode(value);
+        const lines = text.split('\n');
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.type === 'status') {
+              setStreamingStatus(data.message);
+            } else if (data.type === 'chunk') {
+              setStreamingStatus('Generating your report...');
+            } else if (data.type === 'complete') {
+              setReport(data.report);
+              setReviewId(data.reviewId);
+              setIsLoading(false);
+              setStreamingStatus(null);
+              window.dispatchEvent(new CustomEvent('reviewComplete'));
+            } else if (data.type === 'error') {
+              setError(data.message);
+              setIsLoading(false);
+              setStreamingStatus(null);
+            }
+          } catch (e) {
+            /* skip malformed */
+          }
+        }
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to submit review');
-      throw err;
-    } finally {
+      setError('Something went wrong. Please try again.');
       setIsLoading(false);
+      setStreamingStatus(null);
     }
   }, []);
 
@@ -70,5 +97,14 @@ export function useReviews() {
     return data.approaches;
   }, []);
 
-  return { isLoading, error, report, reviewId, submitReview, explainCode, generateImproved };
+  return {
+    isLoading,
+    error,
+    report,
+    reviewId,
+    streamingStatus,
+    submitReview,
+    explainCode,
+    generateImproved,
+  };
 }

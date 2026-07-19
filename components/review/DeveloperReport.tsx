@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { ScoreCircle } from '@/components/review/ScoreCircle';
 import type { IApproach, IDeveloperReport } from '@/types';
 
+
 /* ── Spring card variants ──────────────────────────────────────────────────── */
 const cardVariants = {
   hidden: { opacity: 0, x: 50, scale: 0.95 },
@@ -83,6 +84,8 @@ export function DeveloperReport({
   const [selectedApproachIndex, setSelectedApproachIndex] = useState(0);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const confettiFiredRef = useRef(false);
+
+
 
   const isRoast = isRoastMode || (report as any).isRoastMode;
   const scoreTone = report.overallScore > 80 ? 'green' : report.overallScore > 60 ? 'yellow' : 'red';
@@ -215,13 +218,13 @@ export function DeveloperReport({
           initial="hidden"
           animate="visible"
           custom={0}
-          className="rounded-xl border border-zinc-800 bg-zinc-900 p-4"
+          className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4"
         >
           <div className="flex items-center gap-4">
             <ScoreCircle score={report.overallScore} size={96} />
             <div className="flex-1 min-w-0">
-              <div className="text-xs uppercase tracking-[0.18em] text-zinc-500 mb-1">Overall Score</div>
-              <p className="text-sm font-medium text-white leading-snug line-clamp-2">{report.summary}</p>
+              <div className="text-xs uppercase tracking-[0.18em] text-[var(--text-secondary)] mb-1">Overall Score</div>
+              <p className="text-sm font-medium text-[var(--text-primary)] leading-snug line-clamp-2">{report.summary}</p>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 <MetricPill label="Bugs" value={report.bugsFound} tone="red" />
                 <MetricPill label="Perf" value={`${report.performance}/10`} tone={report.performance >= 8 ? 'green' : report.performance >= 6 ? 'yellow' : 'red'} />
@@ -232,8 +235,8 @@ export function DeveloperReport({
           </div>
 
           <div className="mt-3 flex flex-wrap gap-2">
-            <span className="rounded-full border border-zinc-700 bg-zinc-800/50 px-2.5 py-1 text-xs text-zinc-400">Time: {report.timeComplexity}</span>
-            <span className="rounded-full border border-zinc-700 bg-zinc-800/50 px-2.5 py-1 text-xs text-zinc-400">Space: {report.spaceComplexity}</span>
+            <span className="rounded-full border border-[var(--border-primary)] bg-[var(--bg-card)] px-2.5 py-1 text-xs text-[var(--text-secondary)]">Time: {report.timeComplexity}</span>
+            <span className="rounded-full border border-[var(--border-primary)] bg-[var(--bg-card)] px-2.5 py-1 text-xs text-[var(--text-secondary)]">Space: {report.spaceComplexity}</span>
           </div>
         </motion.div>
 
@@ -258,13 +261,13 @@ export function DeveloperReport({
           initial="hidden"
           animate="visible"
           custom={2}
-          className="rounded-xl border border-zinc-800 bg-zinc-900 p-4"
+          className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4"
         >
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
             <BookOpen className="h-4 w-4 text-blue-400" />
             Summary
           </div>
-          <p className="text-sm leading-relaxed text-zinc-300">{report.summary}</p>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{report.summary}</p>
         </motion.div>
 
         {/* ── Strengths & Weaknesses ───────────────────────────────────── */}
@@ -275,12 +278,12 @@ export function DeveloperReport({
           custom={3}
           className="grid gap-3 grid-cols-2"
         >
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4">
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
               <CheckCircle2 className="h-4 w-4 text-emerald-400" />
               Strengths
             </div>
-            <ul className="space-y-1.5 text-xs text-zinc-300">
+            <ul className="space-y-1.5 text-xs text-[var(--text-secondary)]">
               {report.strengths.map((item) => (
                 <li key={item} className="flex gap-1.5">
                   <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-emerald-400" />
@@ -289,12 +292,12 @@ export function DeveloperReport({
               ))}
             </ul>
           </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4">
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
               <XCircle className="h-4 w-4 text-red-400" />
               Weaknesses
             </div>
-            <ul className="space-y-1.5 text-xs text-zinc-300">
+            <ul className="space-y-1.5 text-xs text-[var(--text-secondary)]">
               {report.weaknesses.map((item) => (
                 <li key={item} className="flex gap-1.5">
                   <XCircle className="mt-0.5 h-3 w-3 shrink-0 text-red-400" />
@@ -311,9 +314,9 @@ export function DeveloperReport({
           initial="hidden"
           animate="visible"
           custom={4}
-          className="rounded-xl border border-zinc-800 bg-zinc-900 p-4"
+          className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4"
         >
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
             <Bug className="h-4 w-4 text-red-400" />
             Bug Detection
           </div>
@@ -334,9 +337,9 @@ export function DeveloperReport({
           initial="hidden"
           animate="visible"
           custom={5}
-          className="rounded-xl border border-zinc-800 bg-zinc-900 p-4"
+          className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4"
         >
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
             <Cpu className="h-4 w-4 text-cyan-400" />
             Performance &amp; Complexity
           </div>
@@ -344,10 +347,10 @@ export function DeveloperReport({
             <motion.div initial={{ width: 0 }} animate={{ width: `${(report.performance / 10) * 100}%` }} transition={{ duration: 0.8 }} className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500" />
           </div>
           <div className="mb-3 flex flex-wrap gap-2">
-            <span className="rounded-full border border-zinc-700 bg-zinc-800/50 px-2.5 py-1 text-xs text-zinc-400">Time: {report.timeComplexity}</span>
-            <span className="rounded-full border border-zinc-700 bg-zinc-800/50 px-2.5 py-1 text-xs text-zinc-400">Space: {report.spaceComplexity}</span>
+            <span className="rounded-full border border-[var(--border-primary)] bg-[var(--bg-card)] px-2.5 py-1 text-xs text-[var(--text-secondary)]">Time: {report.timeComplexity}</span>
+            <span className="rounded-full border border-[var(--border-primary)] bg-[var(--bg-card)] px-2.5 py-1 text-xs text-[var(--text-secondary)]">Space: {report.spaceComplexity}</span>
           </div>
-          <ul className="space-y-1.5 text-xs text-zinc-300">
+          <ul className="space-y-1.5 text-xs text-[var(--text-secondary)]">
             {report.suggestedImprovements.map((item) => (
               <li key={item} className="flex gap-1.5">
                 <Zap className="mt-0.5 h-3 w-3 shrink-0 text-blue-400" />
@@ -363,13 +366,13 @@ export function DeveloperReport({
           initial="hidden"
           animate="visible"
           custom={6}
-          className="rounded-xl border border-zinc-800 bg-zinc-900 p-4"
+          className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4"
         >
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
             <BookOpen className="h-4 w-4 text-violet-400" />
             Best Practices
           </div>
-          <ol className="space-y-1.5 text-xs text-zinc-300">
+          <ol className="space-y-1.5 text-xs text-[var(--text-secondary)]">
             {report.bestPractices.map((item, index) => (
               <li key={item} className="flex gap-1.5">
                 <span className="text-blue-400 shrink-0">{index + 1}.</span>
@@ -385,13 +388,13 @@ export function DeveloperReport({
           initial="hidden"
           animate="visible"
           custom={7}
-          className="rounded-xl border border-zinc-800 bg-zinc-900 p-4"
+          className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4"
         >
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
             <Tag className="h-4 w-4 text-emerald-400" />
             Naming Suggestions
           </div>
-          <ul className="space-y-1.5 text-xs text-zinc-300">
+          <ul className="space-y-1.5 text-xs text-[var(--text-secondary)]">
             {report.namingSuggestions.map((item) => (
               <li key={item} className="flex gap-1.5">
                 <Tag className="mt-0.5 h-3 w-3 shrink-0 text-emerald-400" />
@@ -407,13 +410,13 @@ export function DeveloperReport({
           initial="hidden"
           animate="visible"
           custom={8}
-          className="rounded-xl border border-zinc-800 bg-zinc-900 p-4"
+          className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4"
         >
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
             <Lock className="h-4 w-4 text-amber-400" />
             Security Analysis
           </div>
-          <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-zinc-800">
+          <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-[var(--card-border)]">
             <motion.div initial={{ width: 0 }} animate={{ width: `${(report.security / 10) * 100}%` }} transition={{ duration: 0.8 }} className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500" />
           </div>
           {report.securityIssues.length === 0 ? (
@@ -435,11 +438,11 @@ export function DeveloperReport({
           custom={9}
           className={cn('rounded-xl border p-4', scoreTone === 'green' ? 'border-emerald-500/20 bg-emerald-500/10' : scoreTone === 'yellow' ? 'border-amber-500/20 bg-amber-500/10' : 'border-red-500/20 bg-red-500/10')}
         >
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
             <Sparkles className="h-4 w-4" />
             Final Verdict
           </div>
-          <p className="text-sm italic text-zinc-100 leading-relaxed">{report.finalVerdict}</p>
+          <p className="text-sm italic text-[var(--text-primary)] leading-relaxed">{report.finalVerdict}</p>
         </motion.div>
       </div>
 
@@ -470,7 +473,7 @@ export function DeveloperReport({
           </button>
           {hasApproaches && (
             <button onClick={() => setShowComparison(true)} className="flex items-center gap-1.5 rounded-xl border border-blue-500/30 bg-transparent px-3 py-1.5 text-xs font-medium text-blue-300 transition hover:bg-blue-500/10">
-              <Zap className="h-3 w-3" />
+              <Zap className="h-3.5 w-3.5" />
               View Improvements
             </button>
           )}
@@ -485,18 +488,18 @@ export function DeveloperReport({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900 shadow-2xl"
+              className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-card)] shadow-2xl"
             >
-              <div className="flex items-center justify-between border-b border-zinc-700 px-6 py-4">
+              <div className="flex items-center justify-between border-b border-[var(--border-primary)] px-6 py-4">
                 <div className="flex items-center gap-3">
                   <BookOpen className="h-5 w-5 text-blue-400" />
-                  <h2 className="text-lg font-semibold text-white">Code Explanation</h2>
+                  <h2 className="text-lg font-semibold text-[var(--text-primary)]">Code Explanation</h2>
                 </div>
-                <button onClick={() => setShowExplanationModal(false)} className="rounded-full p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white">
+                <button onClick={() => setShowExplanationModal(false)} className="rounded-full p-2 text-zinc-400 hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]">
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-6 text-zinc-300 prose prose-invert max-w-none">
+              <div className="flex-1 overflow-y-auto p-6 text-[var(--text-secondary)] prose prose-invert max-w-none">
                 <ReactMarkdown>{explanation}</ReactMarkdown>
               </div>
             </motion.div>
@@ -513,8 +516,8 @@ export function DeveloperReport({
             className="flex h-full flex-col overflow-hidden"
           >
             {/* Header bar */}
-            <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900 px-6 py-3">
-              <div className="flex items-center gap-2 text-sm font-semibold text-white">
+            <div className="flex items-center justify-between border-b border-[var(--border-primary)] bg-[var(--bg-card)] px-6 py-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
                 <Zap className="h-4 w-4 text-blue-400" />
                 Improvement Approaches
               </div>
@@ -528,7 +531,7 @@ export function DeveloperReport({
                 </button>
                 <button
                   onClick={() => setShowComparison(false)}
-                  className="rounded-full p-1.5 text-zinc-400 transition hover:bg-zinc-800 hover:text-white"
+                  className="rounded-full p-1.5 text-zinc-400 transition hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -536,7 +539,7 @@ export function DeveloperReport({
             </div>
 
             {/* Approach Tabs */}
-            <div className="border-b border-zinc-800 bg-zinc-950/80 px-6 py-3">
+            <div className="border-b border-[var(--border-primary)] bg-[var(--bg-card)]/80 px-6 py-3">
               <div className="flex flex-wrap items-center gap-2">
                 {approaches.map((approach, index) => {
                   const isActive = selectedApproachIndex === index;
@@ -571,11 +574,11 @@ export function DeveloperReport({
                   transition={{ duration: 0.2 }}
                   className="mt-3"
                 >
-                  <p className="text-sm text-zinc-300">{selectedApproach.description}</p>
+                  <p className="text-sm text-[var(--text-secondary)]">{selectedApproach.description}</p>
                   {selectedApproach.improvements.length > 0 && (
                     <ul className="mt-2 space-y-1">
                       {selectedApproach.improvements.map((item, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-zinc-400">
+                        <li key={i} className="flex items-start gap-2 text-xs text-[var(--text-secondary)]">
                           <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-emerald-400" />
                           <span>{item}</span>
                         </li>
@@ -589,8 +592,8 @@ export function DeveloperReport({
             {/* Editor panels */}
             <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-[1px] bg-zinc-800">
               {/* Original Code Panel */}
-              <div className="flex flex-col min-h-0 bg-zinc-950">
-                <div className="border-b border-zinc-800 bg-zinc-900/80 px-4 py-2 text-xs font-medium text-zinc-400 flex items-center gap-2">
+              <div className="flex flex-col min-h-0 bg-[var(--bg-primary)]">
+                <div className="border-b border-[var(--border-primary)] bg-[var(--bg-card)]/80 px-4 py-2 text-xs font-medium text-[var(--text-secondary)] flex items-center gap-2">
                   <span className="inline-block h-2 w-2 rounded-full bg-red-400/60" />
                   Original Code
                 </div>
@@ -614,7 +617,7 @@ export function DeveloperReport({
               </div>
 
               {/* Improved Code Panel — updates with selected approach */}
-              <div className="flex flex-col min-h-0 bg-zinc-950">
+              <div className="flex flex-col min-h-0 bg-[var(--bg-primary)]">
                 <div className={cn(
                   'border-b bg-blue-950/30 px-4 py-2 text-xs font-medium text-blue-300 flex items-center gap-2',
                   DIFFICULTY_COLORS[selectedApproach?.difficulty ?? 'Easy'].border,

@@ -34,6 +34,7 @@ export function CodeEditor({ value, language, onChange, className }: CodeEditorP
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
   const [isEditorReady, setIsEditorReady] = useState(false);
 
+
   useEffect(() => {
     if (editorRef.current && isEditorReady) {
       editorRef.current.getAction('editor.action.formatDocument')?.run();
@@ -41,13 +42,13 @@ export function CodeEditor({ value, language, onChange, className }: CodeEditorP
   }, [language, isEditorReady]);
 
   return (
-    <div className={cn('flex h-full flex-col overflow-hidden bg-[#09090d]', className)}>
-      <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 text-sm text-zinc-400">
+    <div className={cn('flex h-full flex-col overflow-hidden bg-[var(--bg-primary)]', className)}>
+      <div className="flex items-center justify-between border-b border-[var(--border-primary)] bg-[var(--bg-card)] px-4 py-3 text-sm text-[var(--text-secondary)]">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-blue-400" />
           <span>Code Input</span>
         </div>
-        <span className="rounded-full border border-zinc-800 bg-zinc-900/70 px-3 py-1 text-xs uppercase tracking-[0.2em] text-zinc-500">
+        <span className="rounded-full border border-[var(--border-primary)] bg-[var(--bg-input)] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[var(--text-muted)]">
           {language}
         </span>
       </div>

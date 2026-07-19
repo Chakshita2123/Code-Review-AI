@@ -509,7 +509,7 @@ export default function ChatPage() {
               animate={{ x: 0 }}
               exit={{ x: -260 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed inset-y-0 left-0 z-50 w-[260px] border-r border-zinc-800 lg:hidden"
+              className="fixed inset-y-0 left-0 z-50 w-[260px] border-r border-[var(--border-primary)] lg:hidden"
             >
               <ConversationsSidebar
                 conversations={conversations}
@@ -529,23 +529,23 @@ export default function ChatPage() {
       <div className="flex flex-1 flex-col overflow-hidden">
 
         {/* Chat header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0A0A0A]/95 px-4 py-3 backdrop-blur">
+        <div className="flex shrink-0 items-center justify-between border-b border-[var(--border-primary)] bg-[var(--bg-primary)]/95 px-4 py-3 backdrop-blur">
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="rounded-lg p-1.5 text-zinc-500 transition hover:bg-zinc-800 hover:text-white lg:hidden"
+              className="rounded-lg p-1.5 text-[var(--text-secondary)] transition hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] lg:hidden"
               aria-label="Open conversations"
             >
               <Menu className="h-5 w-5" />
             </button>
 
             <div>
-              <h1 className="text-sm font-semibold text-white">
+              <h1 className="text-sm font-semibold text-[var(--text-primary)]">
                 {activeTitle.length > 40 ? activeTitle.slice(0, 40) + '…' : activeTitle}
               </h1>
               {activeConversationId && (
-                <p className="text-[11px] text-zinc-600">
+                <p className="text-[11px] text-[var(--text-secondary)]">
                   {messages.length} message{messages.length !== 1 ? 's' : ''}
                 </p>
               )}
@@ -554,16 +554,16 @@ export default function ChatPage() {
 
           <div className="flex items-center gap-2">
             {/* Model badge */}
-            <div className="hidden items-center gap-1.5 rounded-lg border border-zinc-800 px-3 py-1.5 sm:flex">
+            <div className="hidden items-center gap-1.5 rounded-lg border border-[var(--border-primary)] px-3 py-1.5 sm:flex">
               <Sparkles className="h-3 w-3 text-blue-400" />
-              <span className="text-xs text-zinc-500">Gemini 3 Flash</span>
+              <span className="text-xs text-[var(--text-secondary)]">Gemini 3 Flash</span>
             </div>
 
             {/* Clear / new chat */}
             {messages.length > 0 && (
               <button
                 onClick={handleNewChat}
-                className="flex items-center gap-1.5 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-400 transition hover:border-red-500/30 hover:bg-red-500/8 hover:text-red-400"
+                className="flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] px-3 py-1.5 text-xs text-[var(--text-secondary)] transition hover:border-red-500/30 hover:bg-red-500/8 hover:text-red-400"
                 title="Clear chat"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -609,9 +609,9 @@ export default function ChatPage() {
         </div>
 
         {/* Input area */}
-        <div className="shrink-0 border-t border-zinc-800 bg-[#0A0A0A]/95 px-4 pb-4 pt-3 backdrop-blur sm:px-6">
+        <div className="shrink-0 border-t border-[var(--border-primary)] bg-[var(--bg-primary)]/95 px-4 pb-4 pt-3 backdrop-blur sm:px-6">
           <div className="mx-auto max-w-3xl">
-            <div className="chat-input-glow flex items-end gap-3 rounded-xl border border-zinc-700/60 bg-zinc-900 px-4 py-3 transition-all focus-within:border-blue-500/40">
+            <div className="chat-input-glow flex items-end gap-3 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] px-4 py-3 transition-all focus-within:border-blue-500/40">
               <textarea
                 ref={textareaRef}
                 id="chat-input"
@@ -621,7 +621,7 @@ export default function ChatPage() {
                 placeholder="Ask anything about programming..."
                 disabled={isLoading}
                 rows={1}
-                className="flex-1 resize-none bg-transparent text-sm text-white placeholder:text-zinc-600 focus:outline-none disabled:opacity-50"
+                className="flex-1 resize-none bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none disabled:opacity-50"
                 style={{ maxHeight: '144px' }}
               />
               <button
@@ -637,7 +637,7 @@ export default function ChatPage() {
 
             {/* Bottom bar */}
             <div className="mt-2 flex items-center justify-between px-1">
-              <p className="text-[11px] text-zinc-700">
+              <p className="text-[11px] text-zinc-750">
                 Powered by Gemini AI&nbsp;·&nbsp;Focused on programming
               </p>
               {nearLimit && (

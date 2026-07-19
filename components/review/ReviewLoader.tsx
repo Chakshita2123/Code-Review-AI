@@ -22,7 +22,12 @@ const roastMessages = [
   "🎭 Almost done roasting...",
 ];
 
-export function ReviewLoader({ isRoastMode = false }: { isRoastMode?: boolean }) {
+interface ReviewLoaderProps {
+  isRoastMode?: boolean;
+  streamingStatus?: string | null;
+}
+
+export function ReviewLoader({ isRoastMode = false, streamingStatus = null }: ReviewLoaderProps) {
   const [messageIndex, setMessageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
 
@@ -109,14 +114,14 @@ export function ReviewLoader({ isRoastMode = false }: { isRoastMode?: boolean })
 
       {/* Rotating message */}
       <motion.div
-        key={messageIndex}
+        key={streamingStatus || messageIndex}
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -6 }}
         transition={{ duration: 0.3 }}
         className="mb-2 text-lg font-semibold text-white"
       >
-        {messages[messageIndex]}
+        {streamingStatus || messages[messageIndex]}
       </motion.div>
 
       <p className="max-w-sm text-sm leading-7 text-zinc-400">

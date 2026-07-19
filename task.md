@@ -1,0 +1,26 @@
+# Tasks
+
+- `[x]` Feature 1: Streaming AI Response
+  - `[x]` Create app/api/review/stream/route.ts
+  - `[x]` Update hooks/useReviews.ts
+  - `[x]` Update components/review/ReviewLoader.tsx
+- `[x]` Feature 2: Auto-save Code Editor
+  - `[x]` Update app/(dashboard)/new-review/page.tsx for auto-save and restore
+- `[x]` Feature 3: Live Dashboard Updates
+  - `[x]` Update app/(dashboard)/dashboard/page.tsx to fetch data periodically and display indicators
+- `[ ]` Feature 4: Light/Dark Theme Toggle (FULLY WORKING)
+  - `[ ]` Create lib/theme.ts
+  - `[ ]` Create context/ThemeContext.tsx
+  - `[ ]` Wrap root in ThemeProvider in app/layout.tsx
+  - `[ ]` Replace settings row in settings/page.tsx with toggle
+  - `[ ]` Add Sidebar toggle button in components/layout/Sidebar.tsx
+  - `[ ]` Add Light/Dark css variables in app/globals.css
+  - `[ ]` Update layout/Sidebar.tsx to use CSS variables
+  - `[ ]` Update dashboard/page.tsx to use CSS variables
+  - `[ ]` Update new-review/page.tsx to use CSS variables
+  - `[ ]` Update history/page.tsx to use CSS variables
+  - `[ ]` Update chat/page.tsx to use CSS variables
+  - `[ ]` Update profile/page.tsx to use CSS variables
+  - `[ ]` Update settings/page.tsx to use CSS variables
+  - `[ ]` Update DeveloperReport.tsx to use CSS variables
+- `[ ]` Verification & Walkthrough
