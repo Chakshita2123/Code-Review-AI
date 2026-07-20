@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
-import { connectDB } from '@/lib/db';
+import { getOrCreateUser } from '@/lib/user';
 import Review from '@/models/Review';
 import Conversation from '@/models/Conversation';
-import User from '@/models/User';
 import { ACHIEVEMENTS } from '@/utils/achievements';
 
 export async function GET(request: NextRequest) {
@@ -11,14 +10,12 @@ export async function GET(request: NextRequest) {
   if (auth.error) return auth.error;
 
   try {
-    await connectDB();
-    const user = await User.findOne({ email: auth.session.user.email }).lean();
-    if (!user) {
-      return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
-    }
+    const user = await getOrCreateUser(auth.session.user);
 
-    const reviews = await Review.find({ userId: user._id }).lean();
-    const conversations = await Conversation.find({ userId: user._id }).lean();
+    const [reviews, conversations] = await Promise.all([
+      Review.find({ userId: user._id }).lean(),
+      Conversation.find({ userId: user._id }).lean(),
+    ]);
 
     const earned = new Set<string>();
 
@@ -50,3 +47,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+

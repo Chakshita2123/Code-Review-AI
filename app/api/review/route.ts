@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuthWithRateLimit } from '@/lib/api-auth';
-import { connectDB } from '@/lib/db';
+import { getOrCreateUser } from '@/lib/user';
 import { generateCodeReview } from '@/lib/gemini';
 import { sanitizeCode, validateLanguage } from '@/lib/sanitize';
 import Review from '@/models/Review';
-import User from '@/models/User';
 import type { IDeveloperReport, SupportedLanguage } from '@/types';
 
 export async function GET() {
@@ -17,8 +16,6 @@ export async function POST(request: NextRequest) {
   if (auth.error) return auth.error;
 
   try {
-    await connectDB();
-
     const body = await request.json();
 
     // Sanitize and validate inputs
@@ -49,16 +46,7 @@ export async function POST(request: NextRequest) {
     console.log('API response report keys:', report ? Object.keys(report) : 'null');
     console.log('Setting report:', report);
 
-    let user = await User.findOne({ email: auth.session.user.email });
-    if (!user) {
-      user = await User.create({
-        name: auth.session.user.name || auth.session.user.email.split('@')[0] || 'User',
-        email: auth.session.user.email,
-        image: auth.session.user.image || undefined,
-        provider: 'google',
-        reviewsCompleted: 0,
-      });
-    }
+    const user = await getOrCreateUser(auth.session.user);
 
     let reviewId: string | null = null;
     try {
@@ -89,3 +77,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
-import { connectDB } from '@/lib/db';
+import { getOrCreateUser } from '@/lib/user';
 import Review from '@/models/Review';
 import User from '@/models/User';
 
@@ -13,10 +13,11 @@ interface RouteContext {
  * Returns both the user document and the review (or nulls if not found).
  * Ownership is enforced at the DB query level via userId filter.
  */
-async function getOwnedReview(reviewId: string, userEmail: string) {
-  await connectDB();
-  const user = await User.findOne({ email: userEmail }).lean();
-  if (!user) return { user: null, review: null, wrongOwner: false };
+async function getOwnedReview(
+  reviewId: string,
+  sessionUser: { email: string; name?: string | null; image?: string | null }
+) {
+  const user = await getOrCreateUser(sessionUser);
 
   // First check if review exists at all
   const reviewExists = await Review.exists({ _id: reviewId });
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   try {
     const { id } = await context.params;
-    const { review, wrongOwner } = await getOwnedReview(id, auth.session.user.email);
+    const { review, wrongOwner } = await getOwnedReview(id, auth.session.user);
 
     if (wrongOwner) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -74,7 +75,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
   try {
     const { id } = await context.params;
-    const { user, review, wrongOwner } = await getOwnedReview(id, auth.session.user.email);
+    const { user, review, wrongOwner } = await getOwnedReview(id, auth.session.user);
 
     if (wrongOwner) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -101,3 +102,4 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     );
   }
 }
+

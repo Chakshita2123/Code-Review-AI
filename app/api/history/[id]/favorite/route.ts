@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
-import { connectDB } from '@/lib/db';
+import { getOrCreateUser } from '@/lib/user';
 import Review from '@/models/Review';
-import User from '@/models/User';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -15,11 +14,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
 
-    await connectDB();
-    const user = await User.findOne({ email: auth.session.user.email }).lean();
-    if (!user) {
-      return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
-    }
+    const user = await getOrCreateUser(auth.session.user);
 
     // Check if review exists at all — then verify ownership
     const reviewExists = await Review.exists({ _id: id });
@@ -51,3 +46,4 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
   }
 }
+

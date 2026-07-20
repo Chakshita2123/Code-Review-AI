@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
-import { connectDB } from '@/lib/db';
+import { getOrCreateUser } from '@/lib/user';
 import Conversation from '@/models/Conversation';
-import User from '@/models/User';
 
 export async function GET(request: NextRequest) {
   const auth = await requireAuth(request);
   if (auth.error) return auth.error;
 
   try {
-    await connectDB();
-    const user = await User.findOne({ email: auth.session.user.email }).lean();
-    if (!user) {
-      return NextResponse.json({ success: true, conversations: [] });
-    }
+    const user = await getOrCreateUser(auth.session.user);
 
     const conversations = await Conversation.find({ userId: user._id })
       .sort({ updatedAt: -1 })
@@ -36,3 +31,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+

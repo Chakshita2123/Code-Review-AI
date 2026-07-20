@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { FilterQuery } from 'mongoose';
 import { requireAuth } from '@/lib/api-auth';
-import { connectDB } from '@/lib/db';
+import { getOrCreateUser } from '@/lib/user';
 import Review, { type IReview } from '@/models/Review';
-import User from '@/models/User';
 
 type SortBy = 'newest' | 'oldest' | 'highest' | 'lowest';
 
@@ -50,53 +49,39 @@ export async function GET(request: NextRequest) {
     const favorited = url.searchParams.get('favorited');
     const sortBy = url.searchParams.get('sortBy') || 'newest';
 
-    await connectDB();
-
-    const user = await User.findOne({ email: auth.session.user.email }).lean();
-    if (!user) {
-      return NextResponse.json({
-        success: true,
-        reviews: [],
-        total: 0,
-        page: 1,
-        totalPages: 0,
-        averageScore: 0,
-        favoritesCount: 0,
-        totalAll: 0,
-      });
-    }
+    const user = await getOrCreateUser(auth.session.user);
 
     const filter: FilterQuery<IReview> = { userId: user._id };
     if (language) filter.language = language;
     if (favorited === 'true') filter.isFavorited = true;
     if (search) filter['report.finalVerdict'] = { $regex: search, $options: 'i' };
 
-    const total = await Review.countDocuments(filter);
-    const totalPages = Math.ceil(total / limit);
-    const totalAll = await Review.countDocuments({ userId: user._id });
-
-    const statsAgg = await Review.aggregate([
-      { $match: filter },
-      {
-        $group: {
-          _id: null,
-          avgScore: { $avg: '$report.overallScore' },
-          favorites: { $sum: { $cond: ['$isFavorited', 1, 0] } },
+    const [total, totalAll, statsAgg, reviews] = await Promise.all([
+      Review.countDocuments(filter),
+      Review.countDocuments({ userId: user._id }),
+      Review.aggregate([
+        { $match: filter },
+        {
+          $group: {
+            _id: null,
+            avgScore: { $avg: '$report.overallScore' },
+            favorites: { $sum: { $cond: ['$isFavorited', 1, 0] } },
+          },
         },
-      },
+      ]),
+      Review.find(filter)
+        .sort(getSortOption(sortBy))
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .select(
+          'language report.overallScore report.bugsFound report.performance report.readability report.security report.timeComplexity report.spaceComplexity report.finalVerdict isFavorited createdAt',
+        )
+        .lean<LeanReviewListItem[]>(),
     ]);
 
+    const totalPages = Math.ceil(total / limit);
     const averageScore = statsAgg[0]?.avgScore ? Math.round(statsAgg[0].avgScore) : 0;
     const favoritesCount = statsAgg[0]?.favorites ?? 0;
-
-    const reviews = await Review.find(filter)
-      .sort(getSortOption(sortBy))
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .select(
-        'language report.overallScore report.bugsFound report.performance report.readability report.security report.timeComplexity report.spaceComplexity report.finalVerdict isFavorited createdAt',
-      )
-      .lean<LeanReviewListItem[]>();
 
     const mapped = reviews.map((r) => ({
       id: String(r._id),
@@ -125,3 +110,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+

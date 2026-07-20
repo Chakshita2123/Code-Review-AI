@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
-import { connectDB } from '@/lib/db';
+import { getOrCreateUser } from '@/lib/user';
 import User from '@/models/User';
 import Review from '@/models/Review';
 
@@ -9,11 +9,7 @@ export async function GET(request: NextRequest) {
   if (auth.error) return auth.error;
 
   try {
-    await connectDB();
-    const user = await User.findOne({ email: auth.session.user.email }).lean();
-    if (!user) {
-      return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
-    }
+    const user = await getOrCreateUser(auth.session.user);
 
     const reviews = await Review.find({ userId: user._id })
       .sort({ createdAt: -1 })
@@ -41,11 +37,7 @@ export async function DELETE(request: NextRequest) {
   if (auth.error) return auth.error;
 
   try {
-    await connectDB();
-    const user = await User.findOne({ email: auth.session.user.email }).lean();
-    if (!user) {
-      return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
-    }
+    const user = await getOrCreateUser(auth.session.user);
 
     const result = await Review.deleteMany({ userId: user._id });
 
@@ -64,3 +56,4 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
