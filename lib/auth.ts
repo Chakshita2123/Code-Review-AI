@@ -11,5 +11,8 @@ const nextAuth = NextAuth as unknown as (config: Record<string, unknown>) => {
   auth: (...args: unknown[]) => Promise<unknown>;
 };
 
-export const { handlers, signIn, signOut, auth } = nextAuth(authConfig as Record<string, unknown>);
+export const { handlers, signIn, signOut, auth } = nextAuth({
+  trustHost: true,
+  ...authConfig,
+} as Record<string, unknown>);
 export const { GET, POST } = handlers;

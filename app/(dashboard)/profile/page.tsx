@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FileCode, Loader2, Star, TrendingUp, Flame, Award, Bug, Shield, Code, Globe, MessageSquare } from 'lucide-react';
 import { formatReviewDate, formatRelativeTime } from '@/utils/formatDate';
+import type { AchievementDef } from '@/utils/achievements';
 
 interface ProfileStats {
   totalReviews: number;
@@ -31,7 +32,7 @@ interface ProfileData {
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [stats, setStats] = useState<ProfileStats | null>(null);
-  const [achievements, setAchievements] = useState<{ earned: any[]; locked: any[] } | null>(null);
+  const [achievements, setAchievements] = useState<{ earned: AchievementDef[]; locked: AchievementDef[] } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

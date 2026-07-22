@@ -268,23 +268,20 @@ If the code IS in ${language}, proceed with full review.
 
 ${basePrompt}`;
   const model = getReviewModel();
-  console.log('[Review] Language:', language, 'RoastMode:', roastMode);
-  console.log('[Review] Using model:', 'gemini-3-flash-preview');
 
   try {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const rawText = response.text();
-    console.log('[Gemini Review Raw]', rawText);
     return parseGeminiJson(rawText);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Check if it's a quota/rate limit error
-    if (error?.status === 429) {
+    const err = error as { status?: number; message?: string };
+    if (err?.status === 429) {
       throw new Error('API quota exceeded. Please wait a moment and try again.');
     }
     // For other errors, use fallback
-    console.error('[Review] Error:', error?.status, error?.message);
-    console.log('[Review] Using fallback review');
+    console.error('[Review] Error:', err?.status, err?.message);
     return createFallbackReview(code, language);
   }
 }

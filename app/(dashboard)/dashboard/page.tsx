@@ -35,6 +35,14 @@ type ReviewRow = {
   createdAt: string;
 };
 
+type RawReviewFromApi = {
+  _id: string;
+  language: string;
+  report: { overallScore: number; bugsFound: number; finalVerdict: string };
+  isFavorited: boolean;
+  createdAt: string;
+};
+
 const statCardVariants = {
   hidden: { opacity: 0, y: 8 },
   show: { opacity: 1, y: 0 },
@@ -79,7 +87,7 @@ function useCountUp(value: number, duration = 700) {
 }
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const firstName = session?.user?.name?.split(' ')[0] ?? 'there';
 
   const [stats, setStats] = useState<StatData | null>(null);
@@ -91,11 +99,14 @@ export default function DashboardPage() {
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   const fetchDashboardData = useCallback(async () => {
+    if (status !== 'authenticated') return;
     try {
       const [sRes, hRes] = await Promise.all([
         fetch('/api/stats'),
         fetch('/api/history?limit=10'),
       ]);
+      if (!sRes.ok || !hRes.ok) return;
+
       const sJson = await sRes.json();
       const hJson = await hRes.json();
 
@@ -110,48 +121,51 @@ export default function DashboardPage() {
         weeklyNew: sJson.data.weeklyNew || 0,
       });
 
-      const reviews = hJson.reviews || [];
-      setRecent(reviews.map((r: any) => ({ ...r, createdAt: new Date(r.createdAt).toISOString() })));
+      const reviews: RawReviewFromApi[] = hJson.reviews || [];
+      setRecent(reviews.map((r) => ({ ...r, createdAt: new Date(r.createdAt).toISOString() })));
 
       // Trend: last 10 reviews (reverse chronological -> chronological)
-      const trendData = (hJson.reviews || [])
+      const trendRaw: Array<{ date: string; score: number }> = (reviews as RawReviewFromApi[])
         .slice(0, 10)
-        .map((r: any) => ({ date: new Date(r.createdAt).toISOString(), score: r.overallScore }))
+        .map((r) => ({ date: new Date(r.createdAt).toISOString(), score: r.report.overallScore }))
         .reverse()
-        .map((d: any) => ({ date: new Date(d.date).toLocaleDateString(), score: d.score }));
-      setTrend(trendData);
+        .map((d) => ({ date: new Date(d.date).toLocaleDateString(), score: d.score }));
+      setTrend(trendRaw);
 
       // Language distribution
       const byLang: Record<string, number> = {};
-      (hJson.reviews || []).forEach((r: any) => {
+      (reviews as RawReviewFromApi[]).forEach((r) => {
         byLang[r.language] = (byLang[r.language] || 0) + 1;
       });
       setLangDistribution(Object.keys(byLang).length ? byLang : null);
 
       setError(null);
       setLastUpdated(new Date());
-    } catch (err: any) {
-      console.error(err);
-      setError(err?.message || 'Unable to load dashboard');
+    } catch (err: unknown) {
+      console.error('Dashboard fetch failed:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [status]);
 
   // Custom polling hook
-  const useInterval = (callback: () => void, delay: number) => {
+  const useInterval = (callback: () => void, delay: number | null) => {
     const savedCallback = useRef(callback);
     useEffect(() => {
       savedCallback.current = callback;
     }, [callback]);
     useEffect(() => {
+      if (delay === null) return;
       const id = setInterval(() => savedCallback.current(), delay);
       return () => clearInterval(id);
     }, [delay]);
   };
 
-  // Poll every 30 seconds
-  useInterval(fetchDashboardData, 30000);
+  // Poll every 30 seconds only when authenticated
+  useInterval(
+    fetchDashboardData,
+    status === 'authenticated' ? 30000 : null
+  );
 
   // Listen for new review events
   useEffect(() => {
@@ -163,9 +177,11 @@ export default function DashboardPage() {
   }, [fetchDashboardData]);
 
   useEffect(() => {
-    setLoading(true);
-    void fetchDashboardData();
-  }, [fetchDashboardData]);
+    if (status === 'authenticated') {
+      setLoading(true);
+      void fetchDashboardData();
+    }
+  }, [fetchDashboardData, status]);
 
   const totalReviewsCount = useCountUp(stats?.totalReviews || 0);
   const avgScoreCount = useCountUp(Math.round(stats?.averageScore || 0));

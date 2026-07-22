@@ -27,6 +27,7 @@ export interface IDeveloperReport {
   securityIssues: string[];
   suggestedImprovements: string[];
   finalVerdict: string;
+  isRoastMode?: boolean;
 }
 
 export interface IApproach {

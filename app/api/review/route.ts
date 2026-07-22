@@ -40,11 +40,7 @@ export async function POST(request: NextRequest) {
 
     const roastMode = Boolean(body?.roastMode);
 
-    console.log('Reviewing:', language, 'code length:', code.length, 'roastMode:', roastMode);
-
     const report = await generateCodeReview(code, language, roastMode);
-    console.log('API response report keys:', report ? Object.keys(report) : 'null');
-    console.log('Setting report:', report);
 
     const user = await getOrCreateUser(auth.session.user);
 
@@ -67,7 +63,6 @@ export async function POST(request: NextRequest) {
     }
 
     const responsePayload = { success: true, reviewId, report, improvedCode: null };
-    console.log('Full API response:', responsePayload);
     return NextResponse.json(responsePayload);
   } catch (error) {
     console.error('Review submission failed:', error);

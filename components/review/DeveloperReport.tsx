@@ -76,8 +76,6 @@ export function DeveloperReport({
   language,
   isRoastMode,
 }: DeveloperReportProps) {
-  console.log('DeveloperReport rendering, score:', report?.overallScore)
-  console.log('Summary starts with ERROR:', report?.summary?.startsWith('ERROR:'))
   const [isExporting, setIsExporting] = useState(false);
   const [showExplanationModal, setShowExplanationModal] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
@@ -87,7 +85,7 @@ export function DeveloperReport({
 
 
 
-  const isRoast = isRoastMode || (report as any).isRoastMode;
+  const isRoast = isRoastMode || report.isRoastMode;
   const scoreTone = report.overallScore > 80 ? 'green' : report.overallScore > 60 ? 'yellow' : 'red';
 
   const hasApproaches = approaches && approaches.length > 0;

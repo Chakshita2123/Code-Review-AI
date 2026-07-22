@@ -5,8 +5,16 @@ import Review from '@/models/Review';
 import User from '@/models/User';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+interface StreamSession {
+  user: {
+    email?: string | null;
+    name?: string | null;
+    image?: string | null;
+  };
+}
+
 export async function POST(request: NextRequest) {
-  const session = (await auth()) as any;
+  const session = (await auth()) as StreamSession | null;
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
