@@ -101,7 +101,7 @@ ${code}
         let user = await User.findOne({ email: session.user.email });
         if (!user) {
           user = await User.create({
-            name: session.user.name || session.user.email.split('@')[0] || 'User',
+            name: session.user.name || session.user.email?.split('@')[0] || 'User',
             email: session.user.email,
             image: session.user.image || undefined,
             provider: 'google',
