@@ -202,28 +202,28 @@ export default function NewReviewPage() {
       ) : null}
 
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[var(--border-primary)] bg-[var(--bg-card)] px-5 py-5 shadow-[0_0_80px_rgba(8,15,30,0.3)]">
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-4 rounded-3xl border border-[var(--border-primary)] bg-[var(--bg-card)] px-5 py-5 shadow-[0_0_80px_rgba(8,15,30,0.3)]">
           <div>
             <div className="flex items-center gap-2 text-blue-400">
               <Sparkles className="h-5 w-5" />
-              <span className="text-sm font-semibold uppercase tracking-[0.2em]">AI Review Studio</span>
+              <span className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em]">AI Review Studio</span>
             </div>
-            <h1 className="mt-2 text-3xl font-semibold text-[var(--text-primary)]">New Review</h1>
+            <h1 className="mt-1 text-2xl sm:text-3xl font-semibold text-[var(--text-primary)]">New Review</h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-700 bg-transparent px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition hover:border-blue-500/40 hover:text-[var(--text-primary)]">
+          <div className="flex w-full sm:w-auto flex-wrap items-center gap-3">
+            <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-transparent px-3 py-2 text-xs sm:text-sm font-medium text-[var(--text-secondary)] transition hover:border-blue-500/40 hover:text-[var(--text-primary)] flex-1 sm:flex-none">
               <Upload className="h-4 w-4" />
               Upload File
               <input type="file" accept=".js,.ts,.py,.java,.cpp,.c,.go,.rs,.php,.cs" className="hidden" onChange={handleUpload} />
             </label>
 
-            <Button variant="outline" onClick={resetEditor} className="border-red-500/30 text-red-300 hover:bg-red-500/10 hover:text-red-200">
+            <Button variant="outline" onClick={resetEditor} className="border-red-500/30 text-red-300 hover:bg-red-500/10 hover:text-red-200 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none">
               <Trash2 className="mr-2 h-4 w-4" />
               Clear
             </Button>
 
-            <Select value={language} onChange={handleLanguageChange} className="w-[180px] bg-[var(--bg-input)]">
+            <Select value={language} onChange={handleLanguageChange} className="w-full sm:w-[180px] bg-[var(--bg-input)] text-xs sm:text-sm">
               {supportedLanguages.map((option) => (
                 <option key={option} value={option}>
                   {option}
@@ -233,7 +233,7 @@ export default function NewReviewPage() {
 
             <button
               onClick={() => setRoastMode(!roastMode)}
-              className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition ${
+              className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs sm:text-sm font-medium transition flex-1 sm:flex-none ${
                 roastMode
                   ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20'
                   : 'border-zinc-700 bg-transparent text-[var(--text-secondary)] hover:border-zinc-600 hover:text-[var(--text-primary)]'
@@ -244,8 +244,8 @@ export default function NewReviewPage() {
               Roast Mode
             </button>
 
-            <div className="flex flex-col items-end gap-1.5">
-              <Button onClick={handleReview} disabled={!code.trim() || isLoading} className="bg-blue-600 px-5 py-2.5 text-white hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60">
+            <div className="flex w-full sm:w-auto flex-col items-stretch sm:items-end gap-1.5">
+              <Button onClick={handleReview} disabled={!code.trim() || isLoading} className="bg-blue-600 px-5 py-2.5 text-xs sm:text-sm font-medium text-white hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60 w-full sm:w-auto">
                 {isLoading ? (
                   <>
                     <Sparkles className="mr-2 h-4 w-4 animate-pulse" />
@@ -258,7 +258,7 @@ export default function NewReviewPage() {
                   </>
                 )}
               </Button>
-              <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)]">
+              <div className="flex items-center justify-center sm:justify-end gap-1.5 text-[11px] text-[var(--text-muted)]">
                 <Lock className="h-3 w-3 text-emerald-500/70" />
                 <span>Your code is processed securely &amp; privately</span>
               </div>
@@ -268,8 +268,8 @@ export default function NewReviewPage() {
 
         {uploadedFileName ? <div className="text-sm text-[var(--text-secondary)]">Loaded file: {uploadedFileName}</div> : null}
 
-        <div className="flex h-[calc(100vh-80px)] gap-4">
-          <div className="flex flex-col flex-none w-[55%]">
+        <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-160px)] gap-4 pb-6">
+          <div className="flex flex-col w-full lg:w-[55%] h-[300px] sm:h-[400px] lg:h-full flex-none">
             <div className={`relative flex-1 overflow-hidden rounded-2xl border bg-[var(--bg-card)] ${isLoading ? 'border-pulse-blue border-blue-500/30' : 'border-[var(--border-primary)]'}`}>
               {isLoading && <div className="scan-line" />}
               <CodeEditor value={code} language={language} onChange={setCode} />
@@ -281,7 +281,7 @@ export default function NewReviewPage() {
             )}
           </div>
 
-          <div ref={resultsRef} className="flex-1 overflow-y-auto rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4">
+          <div ref={resultsRef} className="flex-1 w-full min-h-[300px] lg:h-full overflow-y-auto rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4">
             <AnimatePresence mode="wait">
               {isLoading ? (
                 <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -304,7 +304,7 @@ export default function NewReviewPage() {
                   />
                 </motion.div>
               ) : (
-                <motion.div key="empty" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-[var(--border-primary)] bg-[var(--bg-card)] p-8 text-center">
+                <motion.div key="empty" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-[var(--border-primary)] bg-[var(--bg-card)] p-8 text-center min-h-[250px]">
                   <div className="mb-5 rounded-full border border-zinc-700 bg-zinc-800/70 p-4 text-zinc-500">
                     <ScanSearch className="h-8 w-8" />
                   </div>

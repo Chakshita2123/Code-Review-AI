@@ -77,7 +77,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.65, ease: 'easeOut', delay: 0.1 }}
-          className="max-w-5xl text-5xl font-black leading-[1.02] tracking-tight text-white sm:text-6xl lg:text-7xl"
+          className="max-w-5xl text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-8xl"
         >
           Get Instant
           <br />
@@ -99,19 +99,19 @@ export function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.65, ease: 'easeOut', delay: 0.3 }}
-          className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+          className="mt-10 flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row"
         >
           <button
             type="button"
             onClick={() => router.push(ctaHref)}
-            className="btn-shimmer btn-press inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-500 px-8 py-4 text-base font-semibold text-white transition hover:bg-blue-600"
+            className="btn-shimmer btn-press flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-500 px-8 py-4 text-base font-semibold text-white transition hover:bg-blue-600 sm:w-auto"
           >
             Start Reviewing Now
             <ArrowRight className="h-4 w-4" />
           </button>
           <Link
             href="#how-it-works"
-            className="btn-shimmer btn-press inline-flex items-center justify-center rounded-2xl border border-zinc-700 bg-transparent px-8 py-4 text-base font-semibold text-white transition hover:border-zinc-500"
+            className="btn-shimmer btn-press flex w-full items-center justify-center rounded-2xl border border-zinc-700 bg-transparent px-8 py-4 text-base font-semibold text-white transition hover:border-zinc-500 sm:w-auto"
           >
             See How It Works
           </Link>
@@ -130,7 +130,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, ease: 'easeOut', delay: 0.5 }}
-          className="relative mt-16 w-full max-w-5xl"
+          className="relative mt-16 hidden w-full max-w-5xl md:block"
         >
           <div className="absolute -left-10 top-8 h-24 w-24 rounded-full bg-blue-500/10 blur-3xl" />
           <div className="absolute -right-10 bottom-8 h-24 w-24 rounded-full bg-emerald-500/10 blur-3xl" />

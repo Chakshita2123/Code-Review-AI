@@ -39,7 +39,7 @@ export function HowItWorks() {
           <h2 className="mt-4 text-4xl font-bold text-white sm:text-5xl">Get a detailed code review in under 3 seconds</h2>
         </motion.div>
 
-        <div className="mt-14 grid gap-6 lg:grid-cols-3">
+        <div className="mt-14 grid gap-6 grid-cols-1 md:grid-cols-3">
           {steps.map((step, index) => (
             <motion.div
               key={step.title}

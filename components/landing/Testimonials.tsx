@@ -32,7 +32,7 @@ export function Testimonials() {
           <h2 className="mt-4 text-4xl font-bold sm:text-5xl">Loved by Developers</h2>
         </div>
 
-        <div className="mt-14 grid gap-6 lg:grid-cols-3">
+        <div className="mt-14 grid gap-6 grid-cols-1 md:grid-cols-3">
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={testimonial.name}

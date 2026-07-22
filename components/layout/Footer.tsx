@@ -4,8 +4,8 @@ import { Github, Twitter } from 'lucide-react';
 export function Footer() {
   return (
     <footer className="relative z-10 border-t border-zinc-800 bg-[#0B0B0E] text-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-12 sm:px-6 lg:px-8 lg:flex-row lg:justify-between">
-        <div className="space-y-3">
+      <div className="mx-auto flex max-w-7xl flex-col items-center text-center gap-10 px-4 py-12 sm:px-6 lg:px-8 lg:flex-row lg:justify-between lg:items-start lg:text-left">
+        <div className="space-y-3 flex flex-col items-center lg:items-start">
           <Link href="/" className="flex items-center gap-3 text-lg font-semibold text-white">
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-400">&lt;/&gt;</span>
             Code Review AI
@@ -13,7 +13,7 @@ export function Footer() {
           <p className="max-w-sm text-sm text-zinc-400">AI-powered code reviews for developers.</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 w-full lg:w-auto">
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400">Product</h3>
             <ul className="mt-4 space-y-3 text-sm text-zinc-500">
@@ -22,9 +22,6 @@ export function Footer() {
               </li>
               <li>
                 <a href="#how-it-works" className="transition hover:text-white">How It Works</a>
-              </li>
-              <li>
-                <a href="#pricing" className="transition hover:text-white">Pricing</a>
               </li>
             </ul>
           </div>
@@ -55,7 +52,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 flex flex-col items-center lg:items-start">
           <p className="text-sm text-zinc-400">Connect with us</p>
           <div className="flex items-center gap-3 text-zinc-400">
             <a href="https://github.com" target="_blank" rel="noreferrer" className="transition hover:text-white">

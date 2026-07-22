@@ -142,7 +142,7 @@ function ScoreCircle({ score }: { score: number }) {
 // ─── Metric pill ──────────────────────────────────────────────────────────────
 function MetricBadge({ label, value }: { label: string; value: string | number }) {
   return (
-    <span className="inline-flex items-center gap-1 text-sm text-zinc-400">
+    <span className="inline-flex items-center gap-1 text-xs sm:text-sm text-zinc-400">
       <span className="text-zinc-600">{label}:</span>
       <span className="font-medium text-zinc-200">{value}</span>
     </span>
@@ -454,24 +454,24 @@ function HistoryPageContent() {
           className="mb-6 flex flex-col gap-3 rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-card)]/40 p-4 backdrop-blur lg:flex-row lg:items-center"
         >
           {/* Search input */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 w-full">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
             <Input
               id="history-search"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search reviews..."
-              className="border-zinc-700/50 bg-[var(--bg-input)] pl-10 text-[var(--text-primary)] placeholder:text-zinc-650 focus:border-blue-500/50 focus:ring-blue-500/20"
+              className="w-full border-zinc-700/50 bg-[var(--bg-input)] pl-10 text-[var(--text-primary)] placeholder:text-zinc-650 focus:border-blue-500/50 focus:ring-blue-500/20 text-xs sm:text-sm"
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 w-full lg:w-auto">
             {/* Language filter */}
             <Select
               id="history-language-filter"
               value={language}
               onChange={(e) => updateParams({ language: e.target.value || null, page: '1' })}
-              className="h-10 min-w-[150px] border-zinc-700/50 bg-[#0f0f0f] text-white"
+              className="h-10 w-full sm:min-w-[150px] border-zinc-700/50 bg-[#0f0f0f] text-white text-xs sm:text-sm"
             >
               <option value="">All Languages</option>
               {SUPPORTED_LANGUAGES.map((lang) => (
@@ -486,7 +486,7 @@ function HistoryPageContent() {
               id="history-favorites-toggle"
               type="button"
               onClick={() => updateParams({ favorited: favorited ? null : 'true', page: '1' })}
-              className={`inline-flex h-10 items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-all ${
+              className={`inline-flex h-10 items-center justify-center gap-2 rounded-md border px-3 py-2 text-xs sm:text-sm font-medium transition-all w-full sm:w-auto ${
                 favorited
                   ? 'border-amber-500/40 bg-amber-500/12 text-amber-400 shadow-sm shadow-amber-500/10'
                   : 'border-zinc-700/50 bg-[#0f0f0f] text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
@@ -501,7 +501,7 @@ function HistoryPageContent() {
               id="history-sort"
               value={sortBy}
               onChange={(e) => updateParams({ sortBy: e.target.value, page: '1' })}
-              className="h-10 min-w-[155px] border-zinc-700/50 bg-[#0f0f0f] text-white"
+              className="h-10 w-full sm:min-w-[155px] border-zinc-700/50 bg-[#0f0f0f] text-white text-xs sm:text-sm"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -658,7 +658,7 @@ function HistoryPageContent() {
                           </div>
 
                           {/* Complexity badges */}
-                          <div className="flex flex-wrap gap-2">
+                          <div className="hidden sm:flex flex-wrap gap-2">
                             <span className="inline-flex items-center gap-1 rounded-full border border-zinc-700/60 bg-zinc-900 px-2.5 py-0.5 text-xs text-zinc-400">
                               <span className="font-medium text-zinc-500">Time:</span>
                               {review.timeComplexity}

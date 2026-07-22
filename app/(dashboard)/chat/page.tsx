@@ -531,13 +531,14 @@ export default function ChatPage() {
         {/* Chat header */}
         <div className="flex shrink-0 items-center justify-between border-b border-[var(--border-primary)] bg-[var(--bg-primary)]/95 px-4 py-3 backdrop-blur">
           <div className="flex items-center gap-3">
-            {/* Mobile hamburger */}
+            {/* Mobile conversations drawer button */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="rounded-lg p-1.5 text-[var(--text-secondary)] transition hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] lg:hidden"
+              className="flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-secondary)] transition hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] lg:hidden"
               aria-label="Open conversations"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4 w-4 text-blue-400" />
+              <span>Conversations</span>
             </button>
 
             <div>

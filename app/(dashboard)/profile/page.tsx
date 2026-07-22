@@ -129,7 +129,7 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Stats Row ─────────────────────────────────────────────────── */}
-      <div className="mb-10 grid gap-4 sm:grid-cols-3">
+      <div className="mb-10 grid gap-4 grid-cols-1 md:grid-cols-3">
         <div className="rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-5">
           <div className="flex items-center gap-3 text-[var(--text-secondary)]">
             <FileCode className="h-5 w-5 text-blue-400" />
@@ -155,7 +155,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="grid gap-10 md:grid-cols-2">
+      <div className="grid gap-10 grid-cols-1 md:grid-cols-2">
         {/* ── Recent Activity ────────────────────────────────────────────── */}
         <section>
           <h2 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">Recent Activity</h2>
@@ -202,7 +202,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-4">
                 <dt className="text-sm text-[var(--text-secondary)]">Email</dt>
-                <dd className="text-sm font-medium text-[var(--text-primary)]">{profile.email}</dd>
+                <dd className="text-sm font-medium text-[var(--text-primary)] truncate max-w-[180px] sm:max-w-none">{profile.email}</dd>
               </div>
               <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-4">
                 <dt className="text-sm text-[var(--text-secondary)]">Auth Provider</dt>
@@ -240,7 +240,7 @@ export default function ProfilePage() {
             </span>
           </div>
           
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
             {achievements.earned.map((ach) => (
               <div
                 key={ach.id}

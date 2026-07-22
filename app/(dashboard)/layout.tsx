@@ -76,34 +76,43 @@ function DashboardCursorGlow() {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] relative overflow-hidden">
       <DashboardCursorGlow />
       <div className="flex min-h-screen relative z-10">
-        <div className="hidden lg:block">
+        <div className="hidden md:block">
           <Sidebar />
         </div>
 
-        {isOpen ? (
-          <div className="fixed inset-0 z-40 bg-black/70 lg:hidden" onClick={() => setIsOpen(false)} />
+        {sidebarOpen ? (
+          <div
+            className="fixed inset-0 z-40 bg-black/50 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
         ) : null}
 
-        <div className={`fixed inset-y-0 left-0 z-50 w-64 transform border-r border-[var(--border-primary)] bg-[var(--sidebar-bg)] transition-transform duration-200 lg:hidden ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <Sidebar onClose={() => setIsOpen(false)} mobile />
+        <div
+          className={`fixed inset-y-0 left-0 z-50 w-64 transform border-r border-[var(--border-primary)] bg-[var(--sidebar-bg)] transition-transform duration-300 md:hidden ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <Sidebar onClose={() => setSidebarOpen(false)} mobile />
         </div>
 
         <div className="flex min-h-screen flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[var(--border-primary)] bg-[var(--bg-primary)]/90 px-4 backdrop-blur lg:hidden">
-            <button onClick={() => setIsOpen(true)} className="rounded-lg border border-[var(--border-primary)] p-2 text-[var(--text-secondary)]">
+          <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-zinc-800 bg-[#0D0D0D] px-4 backdrop-blur md:hidden">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="rounded-lg border border-zinc-800 p-2 text-zinc-400 hover:text-white"
+              aria-label="Open menu"
+            >
               <Menu className="h-5 w-5" />
             </button>
-            <div className="text-sm font-semibold text-[var(--text-primary)]">Code Review AI</div>
-            <button onClick={() => setIsOpen(false)} className="rounded-lg border border-[var(--border-primary)] p-2 text-[var(--text-secondary)]">
-              <X className="h-5 w-5" />
-            </button>
+            <span className="text-sm font-semibold text-white">Code Review AI</span>
+            <div className="w-9" />
           </header>
 
           <main className="flex-1 overflow-y-auto">

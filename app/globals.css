@@ -74,6 +74,8 @@ html {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 body {
@@ -82,6 +84,12 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+img, video {
+  max-width: 100%;
 }
 
 /* ─── Animated Gradient Text ────────────────────────────────────────────────────── */

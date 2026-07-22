@@ -47,7 +47,7 @@ export function StatsBar() {
           viewport={{ once: true, amount: 0.3 }}
           onViewportEnter={() => setStarted(true)}
           transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="grid gap-6 text-center sm:grid-cols-4"
+          className="grid gap-6 text-center grid-cols-2 md:grid-cols-4"
         >
           {stats.map((stat, index) => {
             const count = counts[index];

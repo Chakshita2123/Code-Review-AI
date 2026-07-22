@@ -207,12 +207,12 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-[var(--bg-primary)] p-4 sm:p-8 text-[var(--text-primary)]">
       <div className="gradient-border-animated mx-auto max-w-7xl rounded-3xl">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-semibold">{greeting}, {firstName}!</h2>
             <p className="mt-1 text-sm text-[var(--text-secondary)]">Here's an overview of your code quality journey</p>
           </div>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-wrap items-center sm:items-end gap-2 w-full sm:w-auto justify-between sm:justify-end">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               <span className="text-xs text-[var(--text-secondary)]">
@@ -232,7 +232,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <motion.div initial="hidden" animate="show" className="mt-6 grid gap-4 md:grid-cols-4">
+        <motion.div initial="hidden" animate="show" className="mt-6 grid gap-4 grid-cols-2 md:grid-cols-4">
           {loading && (
             <>
               <Skeleton className="h-28 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6" />
@@ -301,8 +301,8 @@ export default function DashboardPage() {
           )}
         </motion.div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <div className="md:col-span-2 lg:col-span-2 col-span-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6">
+        <div className="mt-6 grid gap-4 grid-cols-1 lg:grid-cols-3">
+          <div className="lg:col-span-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-primary)] p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-5 w-5 text-[var(--text-primary)]" />
