@@ -186,35 +186,37 @@ export function Hero() {
               </div>
 
               <div className="relative flex items-center justify-center">
-                <div className="absolute -left-8 top-8 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-2 text-xs font-semibold text-blue-200 shadow-lg shadow-blue-500/10">
-                  Bug Detected 🐛
-                </div>
-                <div className="absolute -right-8 bottom-8 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-200 shadow-lg shadow-emerald-500/10">
-                  Score: 87/100 ✅
-                </div>
-                <div className="h-[300px] w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-950 via-[#090a14] to-slate-950 p-5 shadow-2xl shadow-slate-950/80">
-                  <div className="flex items-center gap-3 text-sm text-zinc-400">
+                <div className="relative h-[320px] w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-950 via-[#090a14] to-slate-950 p-5 pt-12 pb-12 shadow-2xl shadow-slate-950/80">
+                  {/* Top-left Badge */}
+                  <div className="absolute top-3 left-3 z-10 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-xs font-semibold text-blue-200 shadow-md backdrop-blur-md">
+                    Bug Detected 🪲
+                  </div>
+
+                  {/* Window dots */}
+                  <div className="absolute top-4 right-4 flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
                     <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
                     <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
                   </div>
-                  <pre className="mt-6 h-full overflow-hidden text-left text-sm leading-6 text-zinc-300">
+
+                  {/* Bottom-right Badge */}
+                  <div className="absolute bottom-3 right-3 z-10 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-200 shadow-md backdrop-blur-md">
+                    Score: 87/100 ✅
+                  </div>
+
+                  <pre className="h-full overflow-hidden text-left text-xs sm:text-sm leading-6 text-zinc-300">
                     <code>{`function validateSignup(user) {
   const issues = [];
 
   if (!user.email.match(/@/)) {
-    issues.push('Invalid email address');
+    issues.push('Invalid email');
   }
 
   if (user.password.length < 12) {
-    issues.push('Password must be at least 12 characters');
+    issues.push('Password too short');
   }
 
-  return {
-    score: 87,
-    issues,
-    recommendation: 'Replace nested loops with HashMap',
-  };
+  return { score: 87, issues };
 }`}</code>
                   </pre>
                 </div>
