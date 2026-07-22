@@ -122,10 +122,20 @@ export default function DashboardPage() {
       });
 
       const reviews: RawReviewFromApi[] = hJson.reviews || [];
-      setRecent(reviews.map((r) => ({ ...r, createdAt: new Date(r.createdAt).toISOString() })));
+      setRecent(
+        reviews.map((r) => ({
+          id: r._id,
+          language: r.language,
+          overallScore: r.report.overallScore,
+          bugsFound: r.report.bugsFound,
+          finalVerdict: r.report.finalVerdict,
+          isFavorited: r.isFavorited ?? false,
+          createdAt: r.createdAt,
+        }))
+      );
 
       // Trend: last 10 reviews (reverse chronological -> chronological)
-      const trendRaw: Array<{ date: string; score: number }> = (reviews as RawReviewFromApi[])
+      const trendRaw: Array<{ date: string; score: number }> = reviews
         .slice(0, 10)
         .map((r) => ({ date: new Date(r.createdAt).toISOString(), score: r.report.overallScore }))
         .reverse()
@@ -134,7 +144,7 @@ export default function DashboardPage() {
 
       // Language distribution
       const byLang: Record<string, number> = {};
-      (reviews as RawReviewFromApi[]).forEach((r) => {
+      reviews.forEach((r) => {
         byLang[r.language] = (byLang[r.language] || 0) + 1;
       });
       setLangDistribution(Object.keys(byLang).length ? byLang : null);
