@@ -22,6 +22,7 @@ function getSortOption(sortBy: string): Record<string, 1 | -1> {
 interface LeanReviewListItem {
   _id: { toString(): string };
   language: string;
+  template?: string;
   report?: {
     overallScore?: number;
     bugsFound?: number;
@@ -31,6 +32,7 @@ interface LeanReviewListItem {
     timeComplexity?: string;
     spaceComplexity?: string;
     finalVerdict?: string;
+    template?: string;
   };
   isFavorited?: boolean;
   createdAt: Date;
@@ -46,6 +48,7 @@ export async function GET(request: NextRequest) {
     const page = Math.max(parseInt(url.searchParams.get('page') || '1', 10) || 1, 1);
     const search = url.searchParams.get('search') || '';
     const language = url.searchParams.get('language') || '';
+    const templateFilter = url.searchParams.get('template') || '';
     const favorited = url.searchParams.get('favorited');
     const sortBy = url.searchParams.get('sortBy') || 'newest';
 
@@ -53,6 +56,7 @@ export async function GET(request: NextRequest) {
 
     const filter: FilterQuery<IReview> = { userId: user._id };
     if (language) filter.language = language;
+    if (templateFilter) filter.$or = [{ template: templateFilter }, { 'report.template': templateFilter }];
     if (favorited === 'true') filter.isFavorited = true;
     if (search) filter['report.finalVerdict'] = { $regex: search, $options: 'i' };
 
@@ -74,7 +78,7 @@ export async function GET(request: NextRequest) {
         .skip((page - 1) * limit)
         .limit(limit)
         .select(
-          'language report.overallScore report.bugsFound report.performance report.readability report.security report.timeComplexity report.spaceComplexity report.finalVerdict isFavorited createdAt',
+          'language template report.overallScore report.bugsFound report.performance report.readability report.security report.timeComplexity report.spaceComplexity report.finalVerdict report.template isFavorited createdAt',
         )
         .lean<LeanReviewListItem[]>(),
     ]);
@@ -86,6 +90,7 @@ export async function GET(request: NextRequest) {
     const mapped = reviews.map((r) => ({
       id: String(r._id),
       language: r.language,
+      template: r.template || r.report?.template || 'standard',
       overallScore: r.report?.overallScore ?? 0,
       bugsFound: r.report?.bugsFound ?? 0,
       performance: r.report?.performance ?? 0,

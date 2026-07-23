@@ -38,8 +38,17 @@ type ReviewRow = {
 type RawReviewFromApi = {
   _id: string;
   language: string;
-  report: { overallScore: number; bugsFound: number; finalVerdict: string };
-  isFavorited: boolean;
+  report?: {
+    overallScore?: number;
+    bugsFound?: number;
+    finalVerdict?: string;
+    performance?: number;
+    readability?: number;
+    security?: number;
+    timeComplexity?: string;
+    spaceComplexity?: string;
+  };
+  isFavorited?: boolean;
   createdAt: string;
 };
 
@@ -125,10 +134,10 @@ export default function DashboardPage() {
       setRecent(
         reviews.map((r) => ({
           id: r._id,
-          language: r.language,
-          overallScore: r.report.overallScore,
-          bugsFound: r.report.bugsFound,
-          finalVerdict: r.report.finalVerdict,
+          language: r.language ?? 'Unknown',
+          overallScore: r.report?.overallScore ?? 0,
+          bugsFound: r.report?.bugsFound ?? 0,
+          finalVerdict: r.report?.finalVerdict ?? 'No verdict',
           isFavorited: r.isFavorited ?? false,
           createdAt: r.createdAt,
         }))
@@ -137,7 +146,7 @@ export default function DashboardPage() {
       // Trend: last 10 reviews (reverse chronological -> chronological)
       const trendRaw: Array<{ date: string; score: number }> = reviews
         .slice(0, 10)
-        .map((r) => ({ date: new Date(r.createdAt).toISOString(), score: r.report.overallScore }))
+        .map((r) => ({ date: new Date(r.createdAt).toISOString(), score: r.report?.overallScore ?? 0 }))
         .reverse()
         .map((d) => ({ date: new Date(d.date).toLocaleDateString(), score: d.score }));
       setTrend(trendRaw);

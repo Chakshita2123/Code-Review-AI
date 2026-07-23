@@ -39,8 +39,9 @@ export async function POST(request: NextRequest) {
     }
 
     const roastMode = Boolean(body?.roastMode);
+    const template = typeof body?.template === 'string' ? body.template : 'standard';
 
-    const report = await generateCodeReview(code, language, roastMode);
+    const report = await generateCodeReview(code, language, roastMode, template);
 
     const user = await getOrCreateUser(auth.session.user);
 
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
         improvedCode: null,
         isFavorited: false,
         isRoastMode: roastMode,
+        template,
       });
       reviewId = review._id.toString();
       user.reviewsCompleted += 1;

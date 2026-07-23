@@ -12,8 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { useReviews } from '@/hooks/useReviews';
 import { detectLanguage } from '@/utils/detectLanguage';
-import type { IApproach, IDeveloperReport } from '@/types';
-import type { SupportedLanguage } from '@/types';
+import type { IApproach, IDeveloperReport, ReviewTemplate, SupportedLanguage } from '@/types';
 import { formatRelativeTime } from '@/utils/formatDate';
 
 const defaultCode = `function fibonacci(n) {
@@ -23,12 +22,51 @@ const defaultCode = `function fibonacci(n) {
 
 const supportedLanguages = ['JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C', 'Go', 'Rust', 'PHP', 'C#'];
 
+const TEMPLATES: Array<{
+  id: ReviewTemplate;
+  title: string;
+  icon: string;
+  focusPoints: string[];
+}> = [
+    {
+      id: 'standard',
+      title: 'Standard Review',
+      icon: '🔍',
+      focusPoints: ['Full comprehensive review', 'All sections enabled'],
+    },
+    {
+      id: 'performance',
+      title: 'Performance Audit',
+      icon: '⚡',
+      focusPoints: ['Time/Space complexity', 'Algorithm optimization'],
+    },
+    {
+      id: 'security',
+      title: 'Security Audit',
+      icon: '🔒',
+      focusPoints: ['OWASP Top 10 vulnerabilities', 'Input validation & Auth'],
+    },
+    {
+      id: 'readability',
+      title: 'Readability Check',
+      icon: '📖',
+      focusPoints: ['Code clarity & naming', 'Maintainability & comments'],
+    },
+    {
+      id: 'interview',
+      title: 'Interview Ready',
+      icon: '🎯',
+      focusPoints: ['FAANG standards & verdict', 'Edge cases & elegance'],
+    },
+  ];
+
 export default function NewReviewPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { isLoading, error, report, reviewId, streamingStatus, submitReview, explainCode, generateImproved } = useReviews();
   const [code, setCode] = useState(defaultCode);
   const [language, setLanguage] = useState<SupportedLanguage>('JavaScript');
+  const [template, setTemplate] = useState<ReviewTemplate>('standard');
   const [uploadedFileName, setUploadedFileName] = useState('');
   const [reviewComplete, setReviewComplete] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -57,6 +95,7 @@ export default function NewReviewPage() {
         if (age < 86400000 && savedCode?.trim()) {
           setCode(savedCode);
           setLanguage(savedLang || 'JavaScript');
+          hasUserChangedLanguage.current = true; // FIX 1: don't re-detect restored code
           toast({ title: '📝 Code Restored', description: 'Your previous session has been restored.' });
         }
       }
@@ -106,14 +145,14 @@ export default function NewReviewPage() {
     window.setTimeout(() => setToastMessage(''), 3200);
   };
 
-  // Auto-detect language when code changes (only if user hasn't manually picked a language)
+  // Auto-detect language when code changes
   useEffect(() => {
     if (hasUserChangedLanguage.current || !code.trim()) return;
 
     const detected = detectLanguage(code, language);
     if (detected !== language) {
       setLanguage(detected);
-      showToast(`Detected: ${detected}`);
+      showToast(`🔍 Detected: ${detected}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
@@ -123,11 +162,19 @@ export default function NewReviewPage() {
     setLanguage(event.target.value as SupportedLanguage);
   };
 
+  // FIX 2: Re-enable detection on large paste
+  const handleCodeChange = (value: string) => {
+    const newCode = value || '';
+    if (Math.abs(newCode.length - code.length) > 20) {
+      hasUserChangedLanguage.current = false;
+    }
+    setCode(newCode);
+  };
+
   const handleReview = async () => {
     if (!code.trim() || isLoading) return;
-
     try {
-      await submitReview(code, language, roastMode);
+      await submitReview(code, language, roastMode, template);
     } catch {
       setReviewComplete(false);
       showToast('Unable to generate the review right now.');
@@ -171,12 +218,10 @@ export default function NewReviewPage() {
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     const text = await file.text();
     setCode(text);
     setUploadedFileName(file.name);
-    // Reset manual language override so auto-detect can kick in for uploaded files
-    hasUserChangedLanguage.current = false;
+    hasUserChangedLanguage.current = false; // re-enable detection for uploaded files
   };
 
   const resetEditor = () => {
@@ -186,6 +231,7 @@ export default function NewReviewPage() {
     setExplanation('');
     setApproaches([]);
     setIsSaved(false);
+    setTemplate('standard');
     hasUserChangedLanguage.current = false;
   };
 
@@ -233,11 +279,10 @@ export default function NewReviewPage() {
 
             <button
               onClick={() => setRoastMode(!roastMode)}
-              className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs sm:text-sm font-medium transition flex-1 sm:flex-none ${
-                roastMode
+              className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs sm:text-sm font-medium transition flex-1 sm:flex-none ${roastMode
                   ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20'
                   : 'border-zinc-700 bg-transparent text-[var(--text-secondary)] hover:border-zinc-600 hover:text-[var(--text-primary)]'
-              }`}
+                }`}
               title="Get brutally honest feedback"
             >
               <Flame className={`h-4 w-4 ${roastMode ? 'animate-pulse text-orange-500' : ''}`} />
@@ -266,13 +311,42 @@ export default function NewReviewPage() {
           </div>
         </div>
 
+        {/* ── Template Selector Row ─────────────────────────────────── */}
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">Select Review Focus Template</p>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {TEMPLATES.map((t) => {
+              const isSelected = template === t.id;
+              return (
+                <div
+                  key={t.id}
+                  onClick={() => setTemplate(t.id)}
+                  className={`flex-shrink-0 min-w-[160px] cursor-pointer rounded-xl border p-3 transition-all duration-200 ${isSelected
+                      ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10'
+                      : 'border-zinc-800 hover:border-zinc-600 bg-[var(--bg-card)]'
+                    }`}
+                >
+                  <div className="text-xl mb-1">{t.icon}</div>
+                  <div className="text-sm font-medium text-white">{t.title}</div>
+                  <div className="text-xs text-zinc-500 mt-1 space-y-0.5">
+                    {t.focusPoints.map((p, i) => (
+                      <div key={i}>• {p}</div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {uploadedFileName ? <div className="text-sm text-[var(--text-secondary)]">Loaded file: {uploadedFileName}</div> : null}
 
         <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-160px)] gap-4 pb-6">
           <div className="flex flex-col w-full lg:w-[55%] h-[300px] sm:h-[400px] lg:h-full flex-none">
             <div className={`relative flex-1 overflow-hidden rounded-2xl border bg-[var(--bg-card)] ${isLoading ? 'border-pulse-blue border-blue-500/30' : 'border-[var(--border-primary)]'}`}>
               {isLoading && <div className="scan-line" />}
-              <CodeEditor value={code} language={language} onChange={setCode} />
+              {/* FIX 2: Use handleCodeChange instead of setCode */}
+              <CodeEditor value={code} language={language} onChange={handleCodeChange} />
             </div>
             {lastSaved && (
               <p className="text-xs text-[var(--text-secondary)] mt-1 px-1">

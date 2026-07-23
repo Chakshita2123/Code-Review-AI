@@ -10,7 +10,7 @@ export function useReviews() {
   const [reviewId, setReviewId] = useState<string | null>(null);
   const [streamingStatus, setStreamingStatus] = useState<string | null>(null);
 
-  const submitReview = useCallback(async (code: string, language: string, roastMode = false) => {
+  const submitReview = useCallback(async (code: string, language: string, roastMode = false, template = 'standard') => {
     setIsLoading(true);
     setError(null);
     setReport(null);
@@ -20,7 +20,7 @@ export function useReviews() {
       const response = await fetch('/api/review/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, language, roastMode }),
+        body: JSON.stringify({ code, language, roastMode, template }),
       });
 
       if (!response.ok) throw new Error('Failed');

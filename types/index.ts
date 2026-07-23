@@ -9,6 +9,8 @@ export interface IUser {
   updatedAt: Date;
 }
 
+export type ReviewTemplate = 'standard' | 'performance' | 'security' | 'readability' | 'interview';
+
 export interface IDeveloperReport {
   overallScore: number;
   bugsFound: number;
@@ -28,6 +30,7 @@ export interface IDeveloperReport {
   suggestedImprovements: string[];
   finalVerdict: string;
   isRoastMode?: boolean;
+  template?: ReviewTemplate;
 }
 
 export interface IApproach {
@@ -59,6 +62,7 @@ export interface IReview {
   report: IDeveloperReport;
   isFavorited: boolean;
   isRoastMode?: boolean;
+  template?: ReviewTemplate;
   createdAt: Date;
   updatedAt: Date;
 }

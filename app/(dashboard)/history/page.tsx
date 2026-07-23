@@ -232,21 +232,22 @@ function HistoryPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const page = Math.max(parseInt(searchParams.get('page') || '1', 10) || 1, 1);
-  const language = searchParams.get('language') || '';
-  const favorited = searchParams.get('favorited') === 'true';
-  const sortBy = (searchParams.get('sortBy') || 'newest') as SortBy;
   const urlSearch = searchParams.get('search') || '';
+  const language = searchParams.get('language') || '';
+  const templateFilter = searchParams.get('template') || '';
+  const favorited = searchParams.get('favorited') === 'true';
+  const sortBy = (searchParams.get('sortBy') as SortBy) || 'newest';
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
 
   const [searchInput, setSearchInput] = useState(urlSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(urlSearch);
   const [reviews, setReviews] = useState<HistoryListItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [averageScore, setAverageScore] = useState(0);
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [totalAll, setTotalAll] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [expandedReport, setExpandedReport] = useState<IDeveloperReport | null>(null);
   const [loadingReportId, setLoadingReportId] = useState<string | null>(null);
@@ -254,7 +255,7 @@ function HistoryPageContent() {
   const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<HistoryListItem | null>(null);
 
-  const hasActiveFilters = Boolean(debouncedSearch || language || favorited);
+  const hasActiveFilters = Boolean(debouncedSearch || language || templateFilter || favorited);
 
   // ── URL param helper ─────────────────────────────────────────────────────
   const updateParams = useCallback(
@@ -300,6 +301,7 @@ function HistoryPageContent() {
         });
         if (debouncedSearch) params.set('search', debouncedSearch);
         if (language) params.set('language', language);
+        if (templateFilter) params.set('template', templateFilter);
         if (favorited) params.set('favorited', 'true');
 
         const response = await fetch(`/api/history?${params.toString()}`);
@@ -471,7 +473,7 @@ function HistoryPageContent() {
               id="history-language-filter"
               value={language}
               onChange={(e) => updateParams({ language: e.target.value || null, page: '1' })}
-              className="h-10 w-full sm:min-w-[150px] border-zinc-700/50 bg-[#0f0f0f] text-white text-xs sm:text-sm"
+              className="h-10 w-full sm:min-w-[140px] border-zinc-700/50 bg-[#0f0f0f] text-white text-xs sm:text-sm"
             >
               <option value="">All Languages</option>
               {SUPPORTED_LANGUAGES.map((lang) => (
@@ -479,6 +481,21 @@ function HistoryPageContent() {
                   {lang}
                 </option>
               ))}
+            </Select>
+
+            {/* Template filter */}
+            <Select
+              id="history-template-filter"
+              value={templateFilter}
+              onChange={(e) => updateParams({ template: e.target.value || null, page: '1' })}
+              className="h-10 w-full sm:min-w-[150px] border-zinc-700/50 bg-[#0f0f0f] text-white text-xs sm:text-sm"
+            >
+              <option value="">All Templates</option>
+              <option value="standard">🔍 Standard</option>
+              <option value="performance">⚡ Performance</option>
+              <option value="security">🔒 Security</option>
+              <option value="readability">📖 Readability</option>
+              <option value="interview">🎯 Interview Ready</option>
             </Select>
 
             {/* Favorites toggle */}
@@ -501,7 +518,7 @@ function HistoryPageContent() {
               id="history-sort"
               value={sortBy}
               onChange={(e) => updateParams({ sortBy: e.target.value, page: '1' })}
-              className="h-10 w-full sm:min-w-[155px] border-zinc-700/50 bg-[#0f0f0f] text-white text-xs sm:text-sm"
+              className="h-10 w-full sm:min-w-[145px] border-zinc-700/50 bg-[#0f0f0f] text-white text-xs sm:text-sm"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -587,13 +604,22 @@ function HistoryPageContent() {
 
                       {/* ── Top row ─────────────────────────────────── */}
                       <div className="relative flex flex-wrap items-center justify-between gap-3">
-                        {/* Language badge */}
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold tracking-wide ${badge.bg} ${badge.text}`}
-                        >
-                          <span className={`h-1.5 w-1.5 rounded-full ${badge.dot}`} />
-                          {review.language}
-                        </span>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {/* Language badge */}
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold tracking-wide ${badge.bg} ${badge.text}`}
+                          >
+                            <span className={`h-1.5 w-1.5 rounded-full ${badge.dot}`} />
+                            {review.language}
+                          </span>
+
+                          {/* Template badge */}
+                          {review.template && (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-zinc-700/60 bg-zinc-800/80 px-2.5 py-0.5 text-xs text-zinc-300">
+                              {review.template === 'interview' ? '🎯 Interview Ready' : review.template === 'performance' ? '⚡ Performance' : review.template === 'security' ? '🔒 Security' : review.template === 'readability' ? '📖 Readability' : '🔍 Standard'}
+                            </span>
+                          )}
+                        </div>
 
                         {/* Date (centered on larger screens) */}
                         <span className="text-xs text-zinc-500">

@@ -162,9 +162,22 @@ export function DeveloperReport({
     window.setTimeout(() => setCopyFeedback(false), 1800);
   };
 
+  const isInterview = report.template === 'interview' || report.finalVerdict?.includes('FAANG Verdict');
+  const verdictLower = (report.finalVerdict || '').toLowerCase();
+  const isStrongHire = verdictLower.includes('strong hire');
+  const isHire = !isStrongHire && verdictLower.includes('hire') && !verdictLower.includes('no hire');
+
+  const templateLabels: Record<string, string> = {
+    standard: '🔍 Standard Review',
+    performance: '⚡ Performance Audit',
+    security: '🔒 Security Audit',
+    readability: '📖 Readability Check',
+    interview: '🎯 Interview Ready',
+  };
+
   return (
     <div className="space-y-3">
-      {/* WRONG LANGUAGE CHECK - add this first */}
+      {/* WRONG LANGUAGE CHECK */}
       {report.overallScore === 0 && 
        report.summary?.startsWith('ERROR:') && (
         <div className="p-4">
@@ -192,8 +205,40 @@ export function DeveloperReport({
       {!(report.overallScore === 0 && 
          report.summary?.startsWith('ERROR:')) && (
         <>
+      {/* ── FAANG Interview Verdict Banner ────────────────────────────── */}
+      {isInterview && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className={`gradient-border-animated rounded-xl p-4 text-white flex items-center justify-between shadow-lg ${
+            isStrongHire
+              ? 'bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-emerald-950/60 border border-emerald-500/50 text-emerald-200 shadow-emerald-500/20'
+              : isHire
+              ? 'bg-gradient-to-r from-blue-500/20 via-blue-500/10 to-blue-950/60 border border-blue-500/50 text-blue-200 shadow-blue-500/20'
+              : 'bg-gradient-to-r from-red-500/20 via-red-500/10 to-red-950/60 border border-red-500/50 text-red-200 shadow-red-500/20'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">{isStrongHire ? '🏆' : isHire ? '✅' : '❌'}</span>
+            <div>
+              <div className={`text-xs uppercase tracking-widest font-semibold ${isStrongHire ? 'text-emerald-400' : isHire ? 'text-blue-400' : 'text-red-400'}`}>
+                FAANG Interview Verdict
+              </div>
+              <div className="text-lg font-extrabold">
+                {isStrongHire ? 'Strong Hire — Exceptional Code!' : isHire ? 'Hire — Good Code Quality' : 'No Hire — Needs Improvement'}
+              </div>
+            </div>
+          </div>
+          <span className={`rounded-full px-3 py-1 text-xs font-bold border ${
+            isStrongHire ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : isHire ? 'bg-blue-500/20 border-blue-500/40 text-blue-300' : 'bg-red-500/20 border-red-500/40 text-red-300'
+          }`}>
+            {isStrongHire || isHire ? 'PASSED' : 'REJECTED'}
+          </span>
+        </motion.div>
+      )}
+
       {/* ── Banners ──────────────────────────────────────────────────────── */}
-      {report.overallScore >= 85 && (
+      {report.overallScore >= 85 && !isInterview && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl bg-gradient-to-r from-emerald-500/20 to-emerald-500/5 border border-emerald-500/30 p-3 text-emerald-200 flex items-center gap-3">
           <Sparkles className="h-4 w-4 text-emerald-400 shrink-0" />
           <span className="text-sm font-medium text-emerald-300">🎉 Excellent Code! Score: {report.overallScore}/100</span>
@@ -210,7 +255,7 @@ export function DeveloperReport({
       {/* ── Report Content ───────────────────────────────────────────────── */}
       <div id="developer-report-content" className={`space-y-3 ${isRoast ? 'border-l-2 border-l-orange-500/50 pl-3' : ''}`}>
 
-        {/* ── Header Card: Score + Metrics ─────────────────────────────── */}
+        {/* ── Header Card: Score + Metrics + Template Badge ────────────── */}
         <motion.div
           variants={cardVariants}
           initial="hidden"
@@ -218,6 +263,13 @@ export function DeveloperReport({
           custom={0}
           className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4"
         >
+          {report.template && (
+            <div className="flex justify-end mb-2">
+              <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs text-zinc-400 border border-zinc-700/60 font-medium">
+                {templateLabels[report.template] ?? report.template}
+              </span>
+            </div>
+          )}
           <div className="flex items-center gap-4">
             <ScoreCircle score={report.overallScore} size={96} />
             <div className="flex-1 min-w-0">

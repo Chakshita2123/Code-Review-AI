@@ -40,6 +40,7 @@ export interface IReview extends Document {
   report: IDeveloperReport;
   isFavorited: boolean;
   isRoastMode?: boolean;
+  template?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -89,6 +90,11 @@ const ReviewSchema = new Schema<IReview>(
     report: { type: reportSchema, required: true },
     isFavorited: { type: Boolean, default: false },
     isRoastMode: { type: Boolean, default: false },
+    template: {
+      type: String,
+      default: 'standard',
+      enum: ['standard', 'performance', 'security', 'readability', 'interview'],
+    },
   },
   { timestamps: true },
 );

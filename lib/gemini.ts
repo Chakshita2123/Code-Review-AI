@@ -168,20 +168,90 @@ function parseGeminiJson(rawResponse: string): IDeveloperReport {
 
 // ─── Code Review ──────────────────────────────────────────────────────────────
 
-export async function generateCodeReview(code: string, language: string, roastMode = false): Promise<IDeveloperReport> {
+export async function generateCodeReview(
+  code: string,
+  language: string,
+  roastMode = false,
+  template = 'standard',
+): Promise<IDeveloperReport> {
   if (!apiKey) {
     console.warn('GEMINI_API_KEY not configured, using local fallback review.');
-    return createFallbackReview(code, language);
+    const fallback = createFallbackReview(code, language);
+    fallback.template = template as any;
+    return fallback;
   }
 
-  const normalPrompt = `You are an expert ${language} code reviewer with deep knowledge of ${language} best practices, idioms, and common pitfalls.
+  const templatePrompts: Record<string, string> = {
+    standard: `You are an expert ${language} code reviewer. Provide a comprehensive review covering all aspects.`,
 
-Analyze the following ${language} code specifically — consider:
-- ${language}-specific best practices and conventions
-- ${language} naming conventions
-- ${language}-specific performance considerations
-- ${language}-specific security vulnerabilities
-- Common ${language} anti-patterns to avoid
+    performance: `You are a performance optimization expert specializing in ${language}.
+Focus HEAVILY on:
+- Time complexity analysis (be very specific with Big O)
+- Space complexity analysis
+- Algorithm efficiency
+- Memory usage patterns
+- Bottlenecks and hotspots
+- Caching opportunities
+- Loop optimizations
+- Data structure choices
+Give performance a weight of 40% in your overall score.
+Be very strict about inefficient code.`,
+
+    security: `You are a cybersecurity expert and ${language} security specialist.
+Focus HEAVILY on:
+- OWASP Top 10 vulnerabilities
+- Input validation and sanitization
+- SQL/NoSQL injection risks
+- XSS vulnerabilities
+- Authentication and authorization issues
+- Sensitive data exposure
+- Cryptographic weaknesses
+- Dependency vulnerabilities
+Give security a weight of 40% in your overall score.
+Be very strict about security issues.`,
+
+    readability: `You are a senior ${language} developer focused on code quality and maintainability.
+Focus HEAVILY on:
+- Variable and function naming
+- Code clarity and simplicity
+- Documentation and comments
+- Function length and single responsibility
+- Code duplication
+- Consistent formatting
+- Self-documenting code
+Give readability a weight of 40% in your overall score.
+Be encouraging but firm about clean code principles.`,
+
+    interview: `You are a FAANG senior engineer conducting a technical interview for a Software Engineer position.
+Evaluate this ${language} code AS IF it was submitted in a coding interview. Focus on:
+
+CRITICAL CHECKS:
+- Does it solve the problem correctly?
+- Time complexity — would this pass with large inputs?
+- Space complexity — is memory usage optimal?
+- Edge cases — null, empty, negative, overflow handled?
+- Code cleanliness — would an interviewer be impressed?
+- Naming — clear variable/function names?
+- Could this be optimized further?
+
+SCORING (be strict like a real FAANG interview):
+- 90-100: Exceptional — would get strong hire
+- 75-89: Good — would likely get hire
+- 60-74: Acceptable — borderline, needs improvement
+- Below 60: Would not pass interview
+
+In your finalVerdict, explicitly state:
+"FAANG Verdict: [Strong Hire / Hire / No Hire]"
+with reason.
+
+In topRecommendation, give the single most important change to make it interview-ready.`,
+  };
+
+  const selectedTemplatePrompt = templatePrompts[template] ?? templatePrompts.standard;
+
+  const normalPrompt = `${selectedTemplatePrompt}
+
+Analyze the following ${language} code specifically — consider language-specific conventions, performance, security, and cleanliness.
 
 Return ONLY a valid JSON object with no markdown, no code fences, no extra text:
 {
@@ -192,16 +262,16 @@ Return ONLY a valid JSON object with no markdown, no code fences, no extra text:
   "security": <number 0-10>,
   "timeComplexity": "<e.g. O(n log n)>",
   "spaceComplexity": "<e.g. O(n)>",
-  "topRecommendation": "<most important language-specific suggestion>",
-  "summary": "<2-3 sentences, mention ${language} specifically>",
-  "strengths": ["<${language}-specific strength>", ...],
-  "weaknesses": ["<${language}-specific weakness>", ...],
+  "topRecommendation": "<most important recommendation>",
+  "summary": "<2-3 sentences summary>",
+  "strengths": ["<strength 1>", ...],
+  "weaknesses": ["<weakness 1>", ...],
   "bugDetails": ["<bug 1>", ...],
-  "bestPractices": ["<${language} best practice>", ...],
-  "namingSuggestions": ["<follow ${language} naming convention>", ...],
-  "securityIssues": ["<${language}-specific security issue>", ...],
+  "bestPractices": ["<best practice 1>", ...],
+  "namingSuggestions": ["<naming suggestion>", ...],
+  "securityIssues": ["<security issue>", ...],
   "suggestedImprovements": ["<improvement 1>", ...],
-  "finalVerdict": "<concluding sentence mentioning ${language}>"
+  "finalVerdict": "<concluding verdict sentence>"
 }
 
 ${language} code to review:
@@ -209,20 +279,17 @@ ${language} code to review:
 ${code}
 \`\`\``;
 
-  const roastPrompt = `You are a brutally honest but funny senior developer doing a code review. You have high standards and a sharp wit. Review the following ${language} code with brutal honesty — point out every flaw, bad practice, and inefficiency, but make it entertaining and educational, not mean-spirited.
+  const roastPrompt = `You are a brutally honest but funny senior developer doing a code review (${template} mode). You have high standards and a sharp wit. Review the following ${language} code with brutal honesty — point out every flaw, bad practice, and inefficiency, but make it entertaining and educational.
 
 Use phrases like:
 - 'This is giving me trust issues...'
 - 'My eyes are bleeding...'  
 - 'Did you write this at 3am?'
 - 'I've seen better code in a tutorial from 2009'
-- 'The good news is... actually there is no good news'
 
-But also genuinely help them improve.
+${template === 'interview' ? 'Give a hilarious FAANG interview roasting verdict starting with "FAANG Verdict: No Hire - [joke]".' : ''}
 
-Return the SAME JSON structure as normal reviews but make the summary, strengths, weaknesses, finalVerdict entertaining and funny while still being accurate.
-
-Return ONLY valid JSON, no markdown:
+Return ONLY valid JSON:
 {
   "overallScore": <number>,
   "bugsFound": <number>,
@@ -231,16 +298,16 @@ Return ONLY valid JSON, no markdown:
   "security": <number 0-10>,
   "timeComplexity": "<string>",
   "spaceComplexity": "<string>",
-  "topRecommendation": "<funny but accurate>",
+  "topRecommendation": "<funny recommendation>",
   "summary": "<entertaining roast summary>",
-  "strengths": ["<genuine strength with humor>"],
-  "weaknesses": ["<weakness described dramatically>"],
-  "bugDetails": ["<bug described with flair>"],
-  "bestPractices": ["<practice with commentary>"],
+  "strengths": ["<strength with humor>"],
+  "weaknesses": ["<dramatic weakness>"],
+  "bugDetails": ["<bug detail>"],
+  "bestPractices": ["<practice critique>"],
   "namingSuggestions": ["<naming critique>"],
   "securityIssues": ["<security issue>"],
   "suggestedImprovements": ["<improvement>"],
-  "finalVerdict": "<dramatic entertaining conclusion>"
+  "finalVerdict": "<dramatic conclusion>"
 }
 
 ${language} code:
@@ -253,14 +320,9 @@ written in ${language}.
 If the code is NOT in ${language}:
 - Set overallScore to 0
 - Set bugsFound to 1  
-- Set summary to: 'ERROR: This does not appear to be 
-  ${language} code. The code seems to be written in a 
-  different language. Please select the correct language 
-  from the dropdown and try again.'
-- Set finalVerdict to: 'Wrong language selected. Please 
-  select the correct programming language and review again.'
-- Set topRecommendation to: 'Select the correct language 
-  from the dropdown menu.'
+- Set summary to: 'ERROR: This does not appear to be ${language} code. Please select the correct language.'
+- Set finalVerdict to: 'Wrong language selected. Please select the correct programming language and review again.'
+- Set topRecommendation to: 'Select the correct language from the dropdown menu.'
 - Set all other numeric scores to 0
 - Return the same JSON structure
 
@@ -273,7 +335,9 @@ ${basePrompt}`;
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const rawText = response.text();
-    return parseGeminiJson(rawText);
+    const parsed = parseGeminiJson(rawText);
+    parsed.template = template as any;
+    return parsed;
   } catch (error: unknown) {
     // Check if it's a quota/rate limit error
     const err = error as { status?: number; message?: string };
@@ -282,7 +346,9 @@ ${basePrompt}`;
     }
     // For other errors, use fallback
     console.error('[Review] Error:', err?.status, err?.message);
-    return createFallbackReview(code, language);
+    const fallback = createFallbackReview(code, language);
+    fallback.template = template as any;
+    return fallback;
   }
 }
 
