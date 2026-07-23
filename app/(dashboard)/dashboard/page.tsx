@@ -133,7 +133,7 @@ export default function DashboardPage() {
       const reviews: RawReviewFromApi[] = hJson.reviews || [];
       setRecent(
         reviews.map((r) => ({
-          id: r._id,
+          id: r._id ?? r.createdAt,
           language: r.language ?? 'Unknown',
           overallScore: r.report?.overallScore ?? 0,
           bugsFound: r.report?.bugsFound ?? 0,
