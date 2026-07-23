@@ -49,6 +49,7 @@ interface HistoryListItem {
   finalVerdict: string;
   isFavorited: boolean;
   createdAt: string;
+  template?: 'standard' | 'performance' | 'security' | 'readability' | 'interview';
 }
 
 interface HistoryResponse {
