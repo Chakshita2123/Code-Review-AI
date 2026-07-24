@@ -508,7 +508,13 @@ Format your responses with:
 - Step by step breakdowns when helpful
 - Practical examples
 
-Keep responses focused on programming and software development. If asked about non-programming topics, politely redirect to programming topics.`;
+Keep responses focused on programming and software development. If asked about non-programming topics, politely redirect to programming topics.
+
+When user asks you to generate, write, or create code:
+- Generate complete, runnable code
+- Always wrap code in proper markdown code fences with language specified (e.g. \`\`\`python or \`\`\`javascript)
+- Add brief explanation after the code
+- Make it production-ready with error handling`;
 
 export async function generateChatResponse(
   history: GeminiHistoryPart[],

@@ -9,24 +9,33 @@ import {
 } from 'react';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import type { Components } from 'react-markdown';
+import dynamic from 'next/dynamic';
 import {
   Check,
+  Code2,
   Copy,
+  Loader2,
   Menu,
   MessageSquare,
   Plus,
+  RefreshCw,
   Send,
   Sparkles,
   Trash2,
   X,
+  Zap,
 } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
 import { formatRelativeTime } from '@/utils/formatDate';
+
+// Monaco Editor loaded lazily (no SSR)
+const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
 // ─── Suggestion chips shown on empty state ─────────────────────────────────
 const SUGGESTIONS = [
@@ -36,6 +45,29 @@ const SUGGESTIONS = [
   'Explain Big O notation',
   'What is a closure in JavaScript?',
   'How does async/await work?',
+];
+
+// ─── Code generator constants ────────────────────────────────────────────────
+const SUPPORTED_LANGUAGES = [
+  'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C', 'Go', 'Rust', 'PHP', 'C#',
+] as const;
+
+type GenLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+
+interface GenSuggestion {
+  label: string;
+  language: GenLanguage;
+}
+
+const GEN_SUGGESTIONS: GenSuggestion[] = [
+  { label: 'Binary search in Python', language: 'Python' },
+  { label: 'Linked list in Java', language: 'Java' },
+  { label: 'REST API with Express.js', language: 'JavaScript' },
+  { label: 'React hook for debounce', language: 'TypeScript' },
+  { label: 'Quick sort in C++', language: 'C++' },
+  { label: 'JWT auth middleware in Node.js', language: 'JavaScript' },
+  { label: 'Fibonacci with memoization in Python', language: 'Python' },
+  { label: 'Stack implementation in Go', language: 'Go' },
 ];
 
 // ─── Typing dots animation ──────────────────────────────────────────────────
@@ -197,6 +229,35 @@ function TypewriterText({ content }: { content: string }) {
   );
 }
 
+// ─── Helper: detect if a message contains a code block ──────────────────────
+function hasCodeBlock(content: string): boolean {
+  return /```[\s\S]*?```/.test(content) || /^( {4}|\t).+/m.test(content);
+}
+
+function extractCode(content: string): string {
+  const fenceMatch = content.match(/```[\w]*\n([\s\S]*?)```/);
+  return fenceMatch ? fenceMatch[1].trim() : content.trim();
+}
+
+function extractLang(content: string): string {
+  const langMatch = content.match(/```([\w+#]+)/);
+  if (!langMatch) return 'JavaScript';
+  const raw = langMatch[1].toLowerCase();
+  const map: Record<string, string> = {
+    js: 'JavaScript', javascript: 'JavaScript',
+    ts: 'TypeScript', typescript: 'TypeScript',
+    py: 'Python', python: 'Python',
+    java: 'Java',
+    cpp: 'C++', 'c++': 'C++',
+    c: 'C',
+    go: 'Go',
+    rust: 'Rust', rs: 'Rust',
+    php: 'PHP',
+    cs: 'C#', csharp: 'C#', 'c#': 'C#',
+  };
+  return map[raw] ?? 'JavaScript';
+}
+
 // ─── Single message bubble ─────────────────────────────────────────────────
 interface MessageBubbleProps {
   role: 'user' | 'assistant';
@@ -205,11 +266,29 @@ interface MessageBubbleProps {
   userImage?: string | null;
   userName?: string | null;
   isLastMessage?: boolean;
+  onReviewCode?: (code: string, language: string) => void;
 }
 
-function MessageBubble({ role, content, timestamp, userImage, userName, isLastMessage }: MessageBubbleProps) {
+function MessageBubble({ role, content, timestamp, userImage, userName, isLastMessage, onReviewCode }: MessageBubbleProps) {
   const isUser = role === 'user';
   const isLatest = isLastMessage;
+  const [bubbleCopied, setBubbleCopied] = useState(false);
+
+  const withCode = hasCodeBlock(content);
+
+  const handleBubbleCopy = () => {
+    const code = extractCode(content);
+    void navigator.clipboard.writeText(code).then(() => {
+      setBubbleCopied(true);
+      setTimeout(() => setBubbleCopied(false), 2000);
+    });
+  };
+
+  const handleReview = () => {
+    if (onReviewCode) {
+      onReviewCode(extractCode(content), extractLang(content));
+    }
+  };
 
   return (
     <motion.div
@@ -258,11 +337,244 @@ function MessageBubble({ role, content, timestamp, userImage, userName, isLastMe
             <ReactMarkdown components={markdownComponents}>{content}</ReactMarkdown>
           )}
         </div>
+
+        {/* Action buttons for messages that contain code */}
+        {withCode && (
+          <div className={`mt-1.5 flex items-center gap-1.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+            {/* Copy code — both user & assistant */}
+            <button
+              onClick={handleBubbleCopy}
+              className="flex items-center gap-1 rounded-md border border-zinc-700/50 bg-zinc-800/80 px-2 py-1 text-[11px] text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-200"
+            >
+              {bubbleCopied ? (
+                <><Check className="h-2.5 w-2.5 text-emerald-400" /><span className="text-emerald-400">Copied</span></>
+              ) : (
+                <><Copy className="h-2.5 w-2.5" />Copy</>  
+              )}
+            </button>
+
+            {/* Review This Code — user messages only */}
+            {isUser && (
+              <button
+                onClick={handleReview}
+                className="flex items-center gap-1 rounded-md border border-blue-500/40 bg-blue-500/10 px-2 py-1 text-[11px] text-blue-300 transition hover:bg-blue-500/20 hover:text-blue-200"
+              >
+                <Zap className="h-2.5 w-2.5" />
+                Review This Code
+              </button>
+            )}
+          </div>
+        )}
+
         <span className="mt-1 text-[11px] text-zinc-600">
           {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>
     </motion.div>
+  );
+}
+
+// ─── AI Code Generator Panel ─────────────────────────────────────────────────
+function CodeGeneratorPanel() {
+  const [genPrompt, setGenPrompt] = useState('');
+  const [genLanguage, setGenLanguage] = useState<GenLanguage>('JavaScript');
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
+  const [genCopied, setGenCopied] = useState(false);
+
+  const generate = async () => {
+    if (!genPrompt.trim() || isGenerating) return;
+    setIsGenerating(true);
+    setGenError(null);
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: genPrompt, language: genLanguage }),
+      });
+      const data = await res.json() as { code?: string; error?: string };
+      if (!res.ok) {
+        setGenError(data.error ?? 'Generation failed. Please try again.');
+      } else {
+        setGeneratedCode(data.code ?? '');
+      }
+    } catch {
+      setGenError('Network error. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleCopy = () => {
+    if (!generatedCode) return;
+    void navigator.clipboard.writeText(generatedCode).then(() => {
+      setGenCopied(true);
+      setTimeout(() => setGenCopied(false), 2000);
+    });
+  };
+
+  const handleSuggestion = (s: GenSuggestion) => {
+    setGenPrompt(s.label);
+    setGenLanguage(s.language);
+  };
+
+  return (
+    <div className="flex flex-1 flex-col overflow-y-auto lg:flex-row">
+      {/* ── Left: Input Form ──────────────────────────────────────────────── */}
+      <div className="flex w-full shrink-0 flex-col gap-5 border-b border-zinc-800 bg-[#0A0A0A] p-6 lg:w-[380px] lg:border-b-0 lg:border-r">
+        <div>
+          <div className="flex items-center gap-2 text-blue-400">
+            <Zap className="h-5 w-5" />
+            <h2 className="text-lg font-bold text-white">AI Code Generator</h2>
+          </div>
+          <p className="mt-1 text-sm text-zinc-500">Describe what you want to generate</p>
+        </div>
+
+        {/* Prompt textarea */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-zinc-400" htmlFor="gen-prompt">
+            Description
+          </label>
+          <textarea
+            id="gen-prompt"
+            value={genPrompt}
+            onChange={(e) => setGenPrompt(e.target.value)}
+            rows={4}
+            maxLength={500}
+            placeholder={`e.g. A binary search function that handles duplicate values and returns all indices`}
+            className="w-full resize-none rounded-xl border border-zinc-700/60 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
+          />
+          <span className={`text-right text-[11px] ${genPrompt.length > 450 ? 'text-amber-500' : 'text-zinc-700'}`}>
+            {genPrompt.length}/500
+          </span>
+        </div>
+
+        {/* Language selector */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-zinc-400" htmlFor="gen-language">
+            Language
+          </label>
+          <select
+            id="gen-language"
+            value={genLanguage}
+            onChange={(e) => setGenLanguage(e.target.value as GenLanguage)}
+            className="rounded-xl border border-zinc-700/60 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-100 focus:border-blue-500/50 focus:outline-none"
+          >
+            {SUPPORTED_LANGUAGES.map((l) => (
+              <option key={l} value={l}>{l}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Generate button */}
+        <button
+          id="gen-generate-btn"
+          onClick={() => void generate()}
+          disabled={!genPrompt.trim() || isGenerating}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isGenerating ? (
+            <><Loader2 className="h-4 w-4 animate-spin" />Generating...</>
+          ) : (
+            <><Zap className="h-4 w-4" />Generate Code</>
+          )}
+        </button>
+
+        {genError && (
+          <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            {genError}
+          </p>
+        )}
+
+        {/* Suggestion chips */}
+        <div>
+          <p className="mb-2.5 text-xs font-medium text-zinc-500">Quick suggestions</p>
+          <div className="flex flex-wrap gap-2">
+            {GEN_SUGGESTIONS.map((s) => (
+              <button
+                key={s.label}
+                onClick={() => handleSuggestion(s)}
+                className="rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-1.5 text-[11px] text-zinc-400 transition hover:border-blue-500/30 hover:bg-blue-500/8 hover:text-blue-300"
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Right: Output Panel ───────────────────────────────────────────── */}
+      <div className="flex flex-1 flex-col gap-4 bg-[#0A0A0A] p-6">
+        {generatedCode === null ? (
+          /* Empty state */
+          <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 text-center">
+            <Code2 className="mb-4 h-12 w-12 text-zinc-600" />
+            <p className="text-sm font-medium text-zinc-400">Your generated code will appear here</p>
+            <p className="mt-1 text-xs text-zinc-600">Describe what you want and click Generate</p>
+          </div>
+        ) : (
+          /* Code output */
+          <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-zinc-700/50">
+            {/* Header bar */}
+            <div className="flex items-center justify-between border-b border-zinc-700/50 bg-zinc-900 px-4 py-2.5">
+              <span className="rounded-md border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-300">
+                {genLanguage}
+              </span>
+              <span className="flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
+                <Zap className="h-3 w-3" /> Generated
+              </span>
+            </div>
+
+            {/* Monaco editor */}
+            <div className="flex-1" style={{ minHeight: '400px' }}>
+              <MonacoEditor
+                height="400px"
+                language={genLanguage.toLowerCase().replace('c++', 'cpp').replace('c#', 'csharp')}
+                value={generatedCode}
+                theme="vs-dark"
+                options={{
+                  readOnly: true,
+                  minimap: { enabled: false },
+                  fontSize: 13,
+                  lineNumbers: 'on',
+                  scrollBeyondLastLine: false,
+                  wordWrap: 'on',
+                  padding: { top: 12, bottom: 12 },
+                  renderLineHighlight: 'none',
+                  scrollbar: { verticalScrollbarSize: 6 },
+                }}
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-between border-t border-zinc-700/50 bg-zinc-900 px-4 py-3">
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCopy}
+                  className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-zinc-600 hover:text-white"
+                >
+                  {genCopied ? (
+                    <><Check className="h-3 w-3 text-emerald-400" /><span className="text-emerald-400">Copied!</span></>
+                  ) : (
+                    <><Copy className="h-3 w-3" />Copy Code</>
+                  )}
+                </button>
+                <button
+                  onClick={() => void generate()}
+                  disabled={isGenerating}
+                  className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-zinc-600 hover:text-white disabled:opacity-50"
+                >
+                  <RefreshCw className={`h-3 w-3 ${isGenerating ? 'animate-spin' : ''}`} />
+                  Regenerate
+                </button>
+              </div>
+              <p className="text-[11px] text-zinc-600">AI-generated code. Review before using in production.</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -412,6 +724,7 @@ function EmptyState({ onSuggestionClick }: { onSuggestionClick: (text: string) =
 // ─── Main Chat Page ─────────────────────────────────────────────────────────
 export default function ChatPage() {
   const { data: session } = useSession();
+  const router = useRouter();
   const {
     conversations,
     messages,
@@ -425,6 +738,7 @@ export default function ChatPage() {
     deleteConversation,
   } = useChat();
 
+  const [activeTab, setActiveTab] = useState<'chat' | 'generate'>('chat');
   const [input, setInput] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -473,6 +787,11 @@ export default function ChatPage() {
     startNewChat();
     setSidebarOpen(false);
     setInput('');
+  };
+
+  const handleReviewCode = (code: string, language: string) => {
+    localStorage.setItem('pending-review', JSON.stringify({ code, language, fromChat: true }));
+    router.push('/new-review');
   };
 
   const charCount = input.length;
@@ -541,16 +860,46 @@ export default function ChatPage() {
               <span>Conversations</span>
             </button>
 
-            <div>
-              <h1 className="text-sm font-semibold text-[var(--text-primary)]">
-                {activeTitle.length > 40 ? activeTitle.slice(0, 40) + '…' : activeTitle}
-              </h1>
-              {activeConversationId && (
-                <p className="text-[11px] text-[var(--text-secondary)]">
-                  {messages.length} message{messages.length !== 1 ? 's' : ''}
-                </p>
-              )}
+            {/* Tab switcher */}
+            <div className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-900 p-1">
+              <button
+                id="chat-tab"
+                onClick={() => setActiveTab('chat')}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                  activeTab === 'chat'
+                    ? 'bg-zinc-700 text-white shadow'
+                    : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                Chat
+              </button>
+              <button
+                id="generate-tab"
+                onClick={() => setActiveTab('generate')}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                  activeTab === 'generate'
+                    ? 'bg-blue-600 text-white shadow'
+                    : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+              >
+                <Zap className="h-3.5 w-3.5" />
+                Generate Code
+              </button>
             </div>
+
+            {activeTab === 'chat' && (
+              <div className="hidden lg:block">
+                <h1 className="text-sm font-semibold text-[var(--text-primary)]">
+                  {activeTitle.length > 40 ? activeTitle.slice(0, 40) + '…' : activeTitle}
+                </h1>
+                {activeConversationId && (
+                  <p className="text-[11px] text-[var(--text-secondary)]">
+                    {messages.length} message{messages.length !== 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -560,8 +909,8 @@ export default function ChatPage() {
               <span className="text-xs text-[var(--text-secondary)]">Gemini 3 Flash</span>
             </div>
 
-            {/* Clear / new chat */}
-            {messages.length > 0 && (
+            {/* Clear / new chat — only in chat tab */}
+            {activeTab === 'chat' && messages.length > 0 && (
               <button
                 onClick={handleNewChat}
                 className="flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] px-3 py-1.5 text-xs text-[var(--text-secondary)] transition hover:border-red-500/30 hover:bg-red-500/8 hover:text-red-400"
@@ -574,7 +923,11 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* Messages area */}
+        {/* ── Generate Code Tab ─────────────────────────────────────────── */}
+        {activeTab === 'generate' && <CodeGeneratorPanel />}
+
+        {/* Messages area — only shown in chat tab */}
+        {activeTab === 'chat' && (
         <div
           ref={messagesContainerRef}
           className="flex-1 overflow-y-auto px-4 py-6 sm:px-6"
@@ -592,6 +945,7 @@ export default function ChatPage() {
                   userImage={session?.user?.image}
                   userName={session?.user?.name}
                   isLastMessage={idx === messages.length - 1 && msg.role === 'assistant'}
+                  onReviewCode={handleReviewCode}
                 />
               ))}
 
@@ -608,8 +962,10 @@ export default function ChatPage() {
             </div>
           )}
         </div>
+        )}
 
-        {/* Input area */}
+        {/* Input area — only shown in chat tab */}
+        {activeTab === 'chat' && (
         <div className="shrink-0 border-t border-[var(--border-primary)] bg-[var(--bg-primary)]/95 px-4 pb-4 pt-3 backdrop-blur sm:px-6">
           <div className="mx-auto max-w-3xl">
             <div className="chat-input-glow flex items-end gap-3 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] px-4 py-3 transition-all focus-within:border-blue-500/40">
@@ -649,6 +1005,7 @@ export default function ChatPage() {
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

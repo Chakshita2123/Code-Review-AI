@@ -87,14 +87,45 @@ export default function NewReviewPage() {
 
   // Restore on mount
   useEffect(() => {
+    // Check for code forwarded from chat "Review This Code"
+    const pendingReview = localStorage.getItem('pending-review');
+    if (pendingReview) {
+      try {
+        const { code: pendingCode, language: pendingLang, fromChat } = JSON.parse(pendingReview) as {
+          code?: string;
+          language?: string;
+          fromChat?: boolean;
+        };
+        if (pendingCode?.trim()) {
+          setCode(pendingCode);
+          if (pendingLang) setLanguage(pendingLang as SupportedLanguage);
+          hasUserChangedLanguage.current = true;
+          localStorage.removeItem('pending-review');
+          if (fromChat) {
+            toast({
+              title: '⚡ Code Loaded from Chat',
+              description: 'Click Review Code to get your AI analysis!',
+            });
+          }
+          return; // skip autosave restore
+        }
+      } catch {
+        localStorage.removeItem('pending-review');
+      }
+    }
+
     try {
       const saved = localStorage.getItem(AUTOSAVE_KEY);
       if (saved) {
-        const { code: savedCode, language: savedLang, savedAt } = JSON.parse(saved);
-        const age = Date.now() - savedAt;
+        const { code: savedCode, language: savedLang, savedAt } = JSON.parse(saved) as {
+          code?: string;
+          language?: string;
+          savedAt?: number;
+        };
+        const age = Date.now() - (savedAt ?? 0);
         if (age < 86400000 && savedCode?.trim()) {
           setCode(savedCode);
-          setLanguage(savedLang || 'JavaScript');
+          setLanguage((savedLang as SupportedLanguage) || 'JavaScript');
           hasUserChangedLanguage.current = true; // FIX 1: don't re-detect restored code
           toast({ title: '📝 Code Restored', description: 'Your previous session has been restored.' });
         }
@@ -103,6 +134,7 @@ export default function NewReviewPage() {
       localStorage.removeItem(AUTOSAVE_KEY);
     }
   }, []);
+
 
   // Auto-save with 2s debounce
   useEffect(() => {
